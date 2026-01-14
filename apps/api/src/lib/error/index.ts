@@ -1,6 +1,7 @@
 import Elysia, { status } from "elysia";
 import { BusinessError } from "./business.error";
 import { logger } from "../winston/winston";
+import z from "zod";
 
 export const error = new Elysia()
   .error({ BusinessError })
@@ -13,6 +14,8 @@ export const error = new Elysia()
         return status(200, { code: 404, message: code });
 
       case "VALIDATION":
+        return status(200, { code: 400, message: error.customError });
+
       case "PARSE":
       case "INVALID_FILE_TYPE":
         return status(200, { code: 400, message: code });
