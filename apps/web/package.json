@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "@rojer/mf-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -21,7 +21,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
-    "common": "workspace:*",
+    "@rojer/mf-common": "workspace:*",
     "elysia": "^1.4.21",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",

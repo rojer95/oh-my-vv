@@ -1,5 +1,5 @@
 {
-  "name": "common",
+  "name": "@rojer/mf-common",
   "module": "index.ts",
   "type": "module",
   "private": true,

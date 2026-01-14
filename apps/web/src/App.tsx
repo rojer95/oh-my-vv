@@ -9,7 +9,7 @@ function App() {
     console.log("run fetchData");
 
     // 1. GET 請求（帶有全自動補全）
-    const { data, error: error1 } = await api.api.get();
+    const { data, error: error1 } = await api.api.get({ query: { t: "1" } });
     console.log("data", data);
 
     if (!error1) setMsg(data.message);
