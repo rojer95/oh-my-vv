@@ -102,31 +102,29 @@ const ConsoleFormat = (
 };
 
 const getWinstonLogger = () => {
-  const transports = [];
+  const transports: any[] = [
+    new winston.transports.DailyRotateFile({
+      filename: "log-%DATE%.log",
+      dirname: path.join(process.cwd(), process.env.LOGGER_DIR || "logs"),
+      level: "error",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "30d",
+      format: winston.format.combine(
+        winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        winston.format.ms(),
+        winston.format.splat(),
+        winston.format.errors({ stack: true }),
+        ConsoleFormat(process.env.APP_NAME || "MyApp", {
+          colors: false,
+          prettyPrint: true,
+        })
+      ),
+    }),
+  ];
 
-  if (process.env.NODE_ENV === "production") {
-    transports.push(
-      new winston.transports.DailyRotateFile({
-        filename: "log-%DATE%.log",
-        dirname: path.join(process.cwd(), process.env.LOGGER_DIR || "logs"),
-        level: "error",
-        datePattern: "YYYY-MM-DD",
-        zippedArchive: true,
-        maxSize: "20m",
-        maxFiles: "30d",
-        format: winston.format.combine(
-          winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-          winston.format.ms(),
-          winston.format.splat(),
-          winston.format.errors({ stack: true }),
-          ConsoleFormat(process.env.APP_NAME || "MyApp", {
-            colors: false,
-            prettyPrint: true,
-          })
-        ),
-      })
-    );
-  } else {
+  if (process.env.NODE_ENV !== "production") {
     transports.push(
       new winston.transports.Console({
         level: "debug",
