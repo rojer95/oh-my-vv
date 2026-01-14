@@ -1,15 +1,15 @@
 import { cors } from "@elysiajs/cors";
 import "dotenv/config";
 import { Elysia } from "elysia";
-import { db } from "./lib/db";
+import { typeorm } from "./lib/typeorm";
 import { error } from "./lib/error";
 import { response } from "./lib/response";
 import { winston } from "./lib/winston";
 
 const app = new Elysia()
   .use(error)
+  .use(typeorm())
   .use(winston)
-  .use(db)
   .use(response)
   .use(cors())
   .group("/api", (app) =>

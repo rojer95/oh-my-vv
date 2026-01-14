@@ -19,7 +19,7 @@ function App() {
     if (!error2) {
       console.log("新用戶:", user);
     } else {
-      alert(error2.message);
+      alert(error2.value.message);
     }
   };
 
