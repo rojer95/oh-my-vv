@@ -1,25 +1,28 @@
-import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
+import "dotenv/config";
+import { Elysia } from "elysia";
+import { db } from "./lib/db";
+import { error } from "./lib/error";
+import { response } from "./lib/response";
+import { winston } from "./lib/winston";
 
 const app = new Elysia()
+  .use(error)
+  .use(winston)
+  .use(db)
+  .use(response)
   .use(cors())
-  // 定義一個測試路由
-  .get("/", () => ({ message: "Hello from Elysia!" }))
-  // 定義一個帶有 Body 驗證的 POST 路由
-  .post(
-    "/user",
-    ({ body }) => {
-      return {
-        id: 1,
-        ...body,
-      };
-    },
-    {
-      body: t.Object({
-        name: t.String(),
-        age: t.Number(),
-      }),
-    }
+  .group("/api", (app) =>
+    app // 定義一個測試路由
+      .get("/", () => {
+        return {
+          message: "Hello from Elysia!",
+        };
+      })
+      // 定義一個帶有 Body 驗證的 POST 路由
+      .get("/admins", async ({ db, logger }) => {
+        return await db.admin.find();
+      })
   )
   .listen(3000);
 
