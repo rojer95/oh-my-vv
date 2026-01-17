@@ -1,6 +1,6 @@
 import Elysia, { ElysiaCustomStatusResponse } from "elysia";
 
-export const response = new Elysia().mapResponse(
+export const response = new Elysia({ name: "lib_response" }).mapResponse(
   { as: "global" },
   ({ responseValue, set }) => {
     set.status = 200;

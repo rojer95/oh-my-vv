@@ -1,3 +1,2 @@
-export interface SharedResponse {
-  message: string;
-}
+export * from "./enum";
+export * from "./type";

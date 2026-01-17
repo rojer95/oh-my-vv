@@ -1,9 +1,8 @@
 import Elysia, { status } from "elysia";
-import { BusinessError } from "./business.error";
 import { logger } from "../winston/winston";
-import z from "zod";
+import { BusinessError } from "./business.error";
 
-export const error = new Elysia()
+export const error = new Elysia({ name: "lib_error" })
   .error({ BusinessError })
   .onError({ as: "global" }, ({ error, code }) => {
     switch (code) {

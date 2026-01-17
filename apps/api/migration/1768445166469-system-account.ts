@@ -1,28 +1,32 @@
 import * as bcrypt from "bcryptjs";
 import { MigrationInterface, QueryRunner, Table } from "typeorm";
 import {
+  Active,
+  ActiveIndex,
   CreatedAt,
   CreatedAtIndex,
   DeletedAt,
+  DeletedAtIndex,
+  DepartmentId,
+  DepartmentIndex,
   Id,
-  MchId,
-  MchIndex,
+  TenantId,
+  TenantIndex,
   PgDataType,
-  TeamId,
-  TeamIndex,
   UpdatedAt,
 } from "../typeorm/migration-common-column";
 
 export class SystemAccount1683172154412 implements MigrationInterface {
+  TABLE_NAME = "system_account";
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: "system_account",
+        name: this.TABLE_NAME,
         comment: "系统账号表",
         columns: [
-          Id("system_account"),
-          MchId,
-          TeamId,
+          Id(this.TABLE_NAME),
+          TenantId,
+          DepartmentId,
           {
             name: "account",
             type: PgDataType.varchar,
@@ -75,12 +79,7 @@ export class SystemAccount1683172154412 implements MigrationInterface {
             comment: "登录次数",
             default: 0,
           },
-          {
-            name: "active",
-            type: PgDataType.boolean,
-            comment: "是否有效 1-是 0-否",
-            default: true,
-          },
+          Active,
           {
             name: "is_super",
             type: PgDataType.boolean,
@@ -88,7 +87,7 @@ export class SystemAccount1683172154412 implements MigrationInterface {
             default: false,
           },
           {
-            name: "roles",
+            name: "role",
             type: PgDataType.jsonb,
             comment: "角色id",
           },
@@ -117,13 +116,20 @@ export class SystemAccount1683172154412 implements MigrationInterface {
           DeletedAt,
         ],
         indices: [
-          MchIndex("system_account"),
-          TeamIndex("system_account"),
-          CreatedAtIndex("system_account"),
+          TenantIndex(this.TABLE_NAME),
+          DepartmentIndex(this.TABLE_NAME),
+          ActiveIndex(this.TABLE_NAME),
+          CreatedAtIndex(this.TABLE_NAME),
+          DeletedAtIndex(this.TABLE_NAME),
+
           {
-            name: "system_account_uuid_account",
+            name: `uid_${this.TABLE_NAME}_account`,
             columnNames: ["account"],
             isUnique: true,
+          },
+          {
+            name: `idx_${this.TABLE_NAME}_account_type`,
+            columnNames: ["account_type"],
           },
         ],
       })
@@ -132,19 +138,19 @@ export class SystemAccount1683172154412 implements MigrationInterface {
     await queryRunner.manager
       .createQueryBuilder()
       .insert()
-      .into("system_account")
+      .into(this.TABLE_NAME)
       .values({
         account: "admin",
         account_type: "platform",
         password: bcrypt.hashSync("admin", bcrypt.genSaltSync(10)),
         real_name: "admin",
-        is_super: 1,
-        roles: "[]",
+        is_super: true,
+        role: "[]",
       })
       .execute();
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable("system_account");
+    await queryRunner.dropTable(this.TABLE_NAME);
   }
 }

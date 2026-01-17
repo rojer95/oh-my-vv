@@ -7,12 +7,12 @@ const connection = {
   port: 6379,
 };
 
-logger.info("🧵 Worker 线程已启动...");
+logger.info("🧵 Worker 线程已启动...", { context: "TestQueue" });
 
 const worker = new Worker(
   "video-process",
   async (job) => {
-    logger.info(`[Thread] 正在处理任务: ${job.id}`);
+    logger.info(`[Thread] 正在处理任务: ${job.id}`, { context: "TestQueue" });
 
     // 模拟重型计算（如视频转码）
     let count = 0;
@@ -20,7 +20,7 @@ const worker = new Worker(
       count++;
     }
 
-    logger.info(`[Thread] 任务 ${job.id} 处理完毕`);
+    logger.info(`[Thread] 任务 ${job.id} 处理完毕`, { context: "TestQueue" });
     return { result: "done" };
   },
   { connection }
@@ -28,5 +28,5 @@ const worker = new Worker(
 
 // 监听错误防止线程静默崩溃
 worker.on("error", (err) => {
-  logger.error("Worker 线程出错:", err);
+  logger.error("Worker 线程出错:", err, { context: "TestQueue" });
 });

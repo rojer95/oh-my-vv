@@ -29,7 +29,7 @@ const defaultOptions: ConsoleFormatOptions = {
 };
 
 const ConsoleFormat = (
-  superSppName = "MyApp",
+  appName = "MyApp",
   options: ConsoleFormatOptions = {}
 ): Format => {
   // Merge default options with user-provided options
@@ -47,8 +47,7 @@ const ConsoleFormat = (
   };
 
   return winston.format.printf(
-    ({ context, level, timestamp, message, ms, appName, ...meta }) => {
-      let displayAppName = appName || superSppName;
+    ({ context, level, timestamp, message, ms, ...meta }) => {
       if ("info" === level) {
         level = "log";
       }
@@ -83,19 +82,35 @@ const ConsoleFormat = (
           })
         : stringifiedMeta;
 
+      // 1. 时间戳处理 (保持不变或略微简化)
+      const formattedTimestamp = timestamp ? `${timestamp}` : "";
+
+      // [AppName] 填充到 12 位
+      const appPart = appName ? color(`[${appName}]`) : "";
+
+      // PID 填充到 6 位
+      const pidPart = formatOptions.processId ? color(String(process.pid)) : "";
+
+      // Level 居中或左对齐 (LOG 为 3 位, ERROR 为 5 位, 取 5 位)
+      const levelPart = color(level.toUpperCase().padEnd(5));
+
+      // Context 模块名对齐
+      const contextPart = context
+        ? yellow(`[${context}]`.padEnd(14))
+        : "".padEnd(14);
+
+      // MS 耗时对齐
+      const msPart = ms ? yellow(String(ms).padStart(7)) : "".padStart(7);
+
       return (
-        (displayAppName ? color(`[${displayAppName}]`) + " " : "") +
-        (formatOptions.processId
-          ? color(String(process.pid)).padEnd(6) + " "
-          : "") +
-        ("undefined" !== typeof timestamp ? `${timestamp} ` : "") +
-        `${color(level.toUpperCase().padStart(7))} ` +
-        ("undefined" !== typeof context
-          ? `${yellow("[" + context + "]")}`
-          : "") +
-        ("undefined" !== typeof message ? ` ${color(message as string)}` : "") +
+        `${appPart} ` +
+        `${pidPart} ` +
+        `${formattedTimestamp} ` +
+        `${levelPart} ` +
+        `${contextPart} ` +
+        `${color(message as string)}` +
         (formattedMeta && formattedMeta !== "{}" ? ` - ${formattedMeta}` : "") +
-        ("undefined" !== typeof ms ? ` ${yellow(ms as string)}` : "")
+        ` ${msPart}`
       );
     }
   );
