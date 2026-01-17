@@ -1,14 +1,15 @@
+import Elysia from "elysia";
 import "reflect-metadata";
 import type { Logger } from "typeorm";
 import { DataSource, FileLogger } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategy";
 import { Logger as WinstonLogger } from "winston";
-import { SystemAccount } from "../../entity/system-account.entity";
-import { SystemDepartment } from "../../entity/system-department.entity";
-import { SystemRole } from "../../entity/system-role.entity";
-import { SystemTenant } from "../../entity/system-tenant.entity";
-import { SystemOperationLog } from "../../entity/system-operation-log.entity";
-import { logger } from "../winston/winston";
+import { SystemAccount } from "../entity/system-account.entity";
+import { SystemDepartment } from "../entity/system-department.entity";
+import { SystemOperationLog } from "../entity/system-operation-log.entity";
+import { SystemRole } from "../entity/system-role.entity";
+import { SystemTenant } from "../entity/system-tenant.entity";
+import { logger } from "./logger";
 
 export class TypeORMLogger extends FileLogger implements Logger {
   constructor(readonly typeormLogger: WinstonLogger) {
@@ -60,7 +61,24 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   synchronize: false,
-  entities: [SystemAccount, SystemDepartment, SystemRole, SystemTenant, SystemOperationLog],
+  entities: [
+    SystemAccount,
+    SystemDepartment,
+    SystemRole,
+    SystemTenant,
+    SystemOperationLog,
+  ],
   namingStrategy: new SnakeNamingStrategy(),
   logger: new TypeORMLogger(logger),
 });
+
+export const typeormPlugin = async () => {
+  // 1. 初始化数据库
+  try {
+    await AppDataSource.initialize();
+    return new Elysia({ name: "lib_db" });
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
+};

@@ -1,17 +1,13 @@
 import { MigrationInterface, QueryRunner, Table } from "typeorm";
 import {
-  Active,
-  ActiveIndex,
   CreatedAt,
   CreatedAtIndex,
-  DeletedAt,
-  DeletedAtIndex,
   Id,
   PgDataType,
   TenantId,
   TenantIndex,
   UpdatedAt,
-} from "../typeorm/migration-common-column";
+} from "../migration-common-column";
 
 export class SystemOperationLog1768620659126 implements MigrationInterface {
   TABLE_NAME = "system_operation_log";
@@ -101,10 +97,6 @@ export class SystemOperationLog1768620659126 implements MigrationInterface {
           {
             name: `idx_${this.TABLE_NAME}_permission_key`,
             columnNames: ["permission_key"],
-          },
-          {
-            name: `idx_${this.TABLE_NAME}_created_at`,
-            columnNames: ["created_at"],
           },
         ],
       })

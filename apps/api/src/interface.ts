@@ -1,5 +1,3 @@
-import "elysia";
-
 export interface JwtPayload {
   userId: number;
   iat?: number;

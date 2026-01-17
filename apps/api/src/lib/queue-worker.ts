@@ -1,7 +1,7 @@
 import Elysia from "elysia";
-import { logger } from "../winston/winston";
+import { logger } from "./logger";
 
-export const queue = ({ workers }: { workers: string[] }) =>
+export const queueWorkerPlugin = ({ workers }: { workers: string[] }) =>
   new Elysia({ name: "lib_queue" }).onStart(() => {
     for (const worker of workers) {
       new Worker(

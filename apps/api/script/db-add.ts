@@ -9,7 +9,7 @@ if (process.argv.length !== 3) {
 const name = process.argv[2];
 
 console.log(
-  execSync(`bun run typeorm migration:create migration/${name}`, {
+  execSync(`bun run typeorm migration:create typeorm/migration/${name}`, {
     encoding: "utf8",
   })
 );

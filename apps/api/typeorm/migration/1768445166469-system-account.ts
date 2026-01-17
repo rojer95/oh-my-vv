@@ -14,7 +14,7 @@ import {
   TenantIndex,
   PgDataType,
   UpdatedAt,
-} from "../typeorm/migration-common-column";
+} from "../migration-common-column";
 
 export class SystemAccount1683172154412 implements MigrationInterface {
   TABLE_NAME = "system_account";

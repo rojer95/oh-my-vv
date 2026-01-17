@@ -1,8 +1,20 @@
 import Elysia, { status } from "elysia";
-import { logger } from "../winston/winston";
-import { BusinessError } from "./business.error";
+import { logger } from "./logger";
 
-export const error = new Elysia({ name: "lib_error" })
+export const BusinessErrorCode = {
+  401: "未经授权的访问",
+  403: "访问权限不足",
+};
+
+export class BusinessError extends Error {
+  errCode: number;
+  constructor(code: keyof typeof BusinessErrorCode) {
+    super(BusinessErrorCode[code]);
+    this.errCode = code;
+  }
+}
+
+export const errorPlugin = new Elysia({ name: "lib_error" })
   .error({ BusinessError })
   .onError({ as: "global" }, ({ error, code }) => {
     switch (code) {

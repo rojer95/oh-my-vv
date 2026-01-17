@@ -4,6 +4,7 @@ import path from "path";
 import { Format } from "logform";
 import safeStringify from "fast-safe-stringify";
 import { inspect } from "util";
+import Elysia from "elysia";
 
 const clc = {
   bold: (text: string) => `\x1B[1m${text}\x1B[0m`,
@@ -163,3 +164,8 @@ const getWinstonLogger = () => {
 };
 
 export const logger = getWinstonLogger();
+
+export const loggerPlugin = new Elysia({ name: "lib_logger" }).decorate(
+  "logger",
+  logger
+);
