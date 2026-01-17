@@ -7,6 +7,7 @@ import { SystemAccount } from "../../entity/system-account.entity";
 import { SystemDepartment } from "../../entity/system-department.entity";
 import { SystemRole } from "../../entity/system-role.entity";
 import { SystemTenant } from "../../entity/system-tenant.entity";
+import { SystemOperationLog } from "../../entity/system-operation-log.entity";
 import { logger } from "../winston/winston";
 
 export class TypeORMLogger extends FileLogger implements Logger {
@@ -59,7 +60,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   synchronize: false,
-  entities: [SystemAccount, SystemDepartment, SystemRole, SystemTenant],
+  entities: [SystemAccount, SystemDepartment, SystemRole, SystemTenant, SystemOperationLog],
   namingStrategy: new SnakeNamingStrategy(),
   logger: new TypeORMLogger(logger),
 });

@@ -4,9 +4,9 @@ export const BusinessErrorCode = {
 };
 
 export class BusinessError extends Error {
-  code: number;
+  errCode: number;
   constructor(code: keyof typeof BusinessErrorCode) {
     super(BusinessErrorCode[code]);
-    this.code;
+    this.errCode = code;
   }
 }

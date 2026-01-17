@@ -7,7 +7,7 @@ export const error = new Elysia({ name: "lib_error" })
   .onError({ as: "global" }, ({ error, code }) => {
     switch (code) {
       case "BusinessError":
-        return status(200, { code: error.code, message: error.message });
+        return status(200, { code: error.errCode, message: error.message });
 
       case "NOT_FOUND":
         return status(200, { code: 404, message: code });

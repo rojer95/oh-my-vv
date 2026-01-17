@@ -9,13 +9,13 @@ function App() {
     console.log("run fetchData");
 
     // 1. GET 請求（帶有全自動補全）
-    const { data, error: error1 } = await api.api.get({ query: { t: "1" } });
+    const { data, error: error1 } = await api.api.permissions.tree.get();
     console.log("data", data);
 
     if (!error1) setMsg(data.message);
 
     // 2. POST 請求（如果你輸入錯誤的類型，編譯器會報錯）
-    const { data: user, error: error2 } = await api.api.admins.get();
+    const { data: user, error: error2 } = await api.api.permissions.flat.get();
     if (!error2) {
       console.log("新用戶:", user);
     } else {
