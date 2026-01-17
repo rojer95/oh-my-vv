@@ -43,6 +43,15 @@
         "typescript": "^5",
       },
     },
+    "apps/common": {
+      "name": "@rojer/mf-common",
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "apps/web": {
       "name": "@rojer/mf-web",
       "version": "0.0.0",
@@ -67,15 +76,6 @@
         "typescript": "~5.9.3",
         "typescript-eslint": "^8.46.4",
         "vite": "^7.2.4",
-      },
-    },
-    "packages/common": {
-      "name": "@rojer/mf-common",
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
       },
     },
   },
@@ -244,7 +244,7 @@
 
     "@rojer/mf-api": ["@rojer/mf-api@workspace:apps/api"],
 
-    "@rojer/mf-common": ["@rojer/mf-common@workspace:packages/common"],
+    "@rojer/mf-common": ["@rojer/mf-common@workspace:apps/common"],
 
     "@rojer/mf-web": ["@rojer/mf-web@workspace:apps/web"],
 
