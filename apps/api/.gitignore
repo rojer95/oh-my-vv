@@ -37,3 +37,5 @@ logs/*
 !logs/.gitkeep
 public/*
 !public/.gitkeep
+
+server

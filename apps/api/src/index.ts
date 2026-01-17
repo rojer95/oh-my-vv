@@ -24,5 +24,5 @@ const app = new Elysia()
   .use(allRoutes)
   .listen(3000);
 
-logger.info(`🦊 Elysia 運行中：${app.server?.hostname}:${app.server?.port}`);
+console.log(`🦊 Elysia 運行中：${app.server?.hostname}:${app.server?.port}`);
 export type App = typeof app;
