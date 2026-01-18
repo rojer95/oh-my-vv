@@ -1,13 +1,5 @@
 import { PERMISSION_TREE } from "./permission-data";
-
-export interface PermissionTreeNode {
-  key: string;
-  name: string;
-  type: string;
-  children?: readonly PermissionTreeNode[];
-  loggable?: boolean;
-  action?: string;
-}
+import type { PermissionTreeNode } from "./permission-data";
 
 function buildFullKey(
   node: Readonly<PermissionTreeNode>,

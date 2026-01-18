@@ -1,6 +1,8 @@
 export const BusinessErrorCode = {
   Unauthorized: [401, "未经授权的访问"],
   Forbidden: [403, "访问权限不足"],
+  NotFound: [404, "资源不存在"],
+  AlreadyExists: [409, "资源已存在"],
   PasswordTooSimple: [10001, "密码太简单"],
   TryLater: [10002, "操作过于频繁，请{{t}}后再试"],
   LackCaptchaCode: [10003, "请输入验证码"],

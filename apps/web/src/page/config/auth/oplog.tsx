@@ -16,7 +16,7 @@ export const OplogPage = () => {
         columns={[
           { dataIndex: "id", title: "ID" },
           {
-            dataIndex: "mchId",
+            dataIndex: "tenantId",
             title: "商户ID",
             showInFilter: true,
           },

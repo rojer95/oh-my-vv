@@ -4,7 +4,8 @@ This document provides guidelines for AI agents working on this codebase.
 
 ## Project Overview
 
-A monorepo using Yarn workspaces with Bun, containing:
+A Bun monorepo with workspaces, containing:
+
 - **API**: Elysia + TypeORM + PostgreSQL + Zod
 - **Web**: React 18 + Vite + MobX + Semi UI
 - **Common**: Shared types and constants
@@ -12,6 +13,7 @@ A monorepo using Yarn workspaces with Bun, containing:
 ## Build Commands
 
 ### Root Level
+
 ```bash
 bun dev              # Watch all workspaces
 bun dev:api          # Watch API with hot reload
@@ -20,6 +22,7 @@ bun clean            # Remove all node_modules and dist
 ```
 
 ### API (apps/api)
+
 ```bash
 bun run              # Bun runtime
 bun start            # Same as bun run
@@ -31,6 +34,7 @@ bun db:undo          # Undo last migration
 ```
 
 ### Web (apps/web)
+
 ```bash
 bun dev              # Vite dev server
 bun build            # TypeScript + Vite build
@@ -39,6 +43,7 @@ bun preview          # Preview production build
 ```
 
 ### Testing
+
 **Note**: No test framework is currently configured. Do not add tests unless explicitly requested.
 
 ## Code Style Guidelines
@@ -60,19 +65,20 @@ import { STORAGE_AUTH_KEY } from "@rojer/mf-common";
 ```
 
 **Rules**:
+
 - Use named imports, avoid default imports
 - Path aliases: `@api/*` for API, `@common/*` for common, `@/*` for web
 
 ### Naming Conventions
 
-| Type | Convention | Examples |
-|------|------------|----------|
-| Files (components/classes) | PascalCase | `UserEntity.ts`, `AuthController.ts` |
-| Files (utilities/others) | kebab-case | `dayjs.ts`, `access.ts` |
-| Functions/variables | camelCase | `loginUser`, `isValid` |
-| Constants | SCREAMING_SNAKE_CASE | `STORAGE_AUTH_KEY`, `BusinessErrorCode` |
-| Types/interfaces | PascalCase | `ProfileType`, `PermissionNode` |
-| Database entities | PascalCase ending with `Entity` | `SystemAccountEntity` |
+| Type                       | Convention                      | Examples                                |
+| -------------------------- | ------------------------------- | --------------------------------------- |
+| Files (components/classes) | PascalCase                      | `UserEntity.ts`, `AuthController.ts`    |
+| Files (utilities/others)   | kebab-case                      | `dayjs.ts`, `access.ts`                 |
+| Functions/variables        | camelCase                       | `loginUser`, `isValid`                  |
+| Constants                  | SCREAMING_SNAKE_CASE            | `STORAGE_AUTH_KEY`, `BusinessErrorCode` |
+| Types/interfaces           | PascalCase                      | `ProfileType`, `PermissionNode`         |
+| Database entities          | PascalCase ending with `Entity` | `SystemAccountEntity`                   |
 
 ### TypeScript
 
@@ -110,16 +116,19 @@ throw new BusinessError(BusinessErrorCode.Unauthorized);
 ```
 
 **Validation**:
+
 - Use Zod for request validation in `.dto.ts` files
 - Attach validation schemas to routes using `{ body: LoginZod }`
 
 **Logging**:
+
 - Use `logger` from `lib/logger` (Winston)
 - Never log sensitive data (passwords, tokens)
 
 ### File Organization
 
 **API Structure**:
+
 ```
 apps/api/src/
 ├── entity/           # TypeORM entities (extend BaseEntity*)
@@ -135,6 +144,7 @@ apps/api/src/
 ```
 
 **Web Structure**:
+
 ```
 apps/web/src/
 ├── component/        # React components
@@ -148,6 +158,7 @@ apps/web/src/
 ### Entity Pattern
 
 Base entities defined in `apps/api/src/entity/base.entity.ts`:
+
 ```typescript
 export abstract class BaseEntity { ... }
 export abstract class BaseEntitySoftDelete extends BaseEntity { ... }
@@ -159,6 +170,7 @@ Use appropriate base class for new entities.
 ### API Patterns
 
 **Controller** (Elysia plugin pattern):
+
 ```typescript
 export const authController = new Elysia()
   .use(auth)
@@ -170,6 +182,7 @@ export const authController = new Elysia()
 ```
 
 **Service** (static methods):
+
 ```typescript
 export abstract class AuthService {
   static async login(account: string, password: string) { ... }
@@ -192,6 +205,7 @@ export const MyComponent = observer(() => { ... });
 ### ESLint
 
 Web workspace uses ESLint flat config (apps/web/eslint.config.js):
+
 ```bash
 cd apps/web && bun lint   # Check
 cd apps/web && bun lint --fix  # Auto-fix
@@ -207,22 +221,23 @@ No ESLint config for API workspace - add one if needed.
 
 ## Key Dependencies
 
-| Layer | Technology |
-|-------|------------|
-| Runtime | Bun 1.x |
-| API Framework | Elysia |
-| ORM | TypeORM |
-| Validation | Zod |
-| JWT | @elysiajs/jwt |
-| Logging | Winston |
+| Layer         | Technology      |
+| ------------- | --------------- |
+| Runtime       | Bun 1.x         |
+| API Framework | Elysia          |
+| ORM           | TypeORM         |
+| Validation    | Zod             |
+| JWT           | @elysiajs/jwt   |
+| Logging       | Winston         |
 | Web Framework | React 18 + Vite |
-| UI Library | Semi UI |
-| State | MobX |
-| HTTP Client | Eden Treaty |
+| UI Library    | Semi UI         |
+| State         | MobX            |
+| HTTP Client   | Eden Treaty     |
 
 ## Environment Variables
 
 **API** (.env):
+
 ```
 JWT_SECRET=your-secret
 DATABASE_URL=postgresql://...
@@ -230,6 +245,7 @@ REDIS_URL=redis://...
 ```
 
 **Web** (.env.production, .env.development):
+
 ```
 VITE_API=http://localhost:3000
 VITE_VERSION=1.0.0

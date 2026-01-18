@@ -22,10 +22,10 @@ export type ProfileType = {
   mail?: string;
 
   /** 商户ID */
-  mchId?: number;
+  tenantId?: number;
 
   /** 商户信息 */
-  mch?: {
+  tenant?: {
     id?: number;
     name?: string;
   };

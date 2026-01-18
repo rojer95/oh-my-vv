@@ -13,6 +13,7 @@ import { RolePage } from "../page/config/auth/role";
 import { DictPage } from "../page/config/dict/dict";
 import { SettingSystemPage } from "../page/config/setting/system";
 import { SettingUploadPage } from "../page/config/setting/upload";
+import { SystemConfigPage } from "../page/config/system-config";
 import { LoginPage } from "../page/login";
 
 import { MerchantListPage } from "../page/merchant/list";
@@ -127,7 +128,7 @@ const mainRoute: RouteObject[] = [
           menu: "系统配置",
           access: PERMISSIONS.systemConfigView.key,
         },
-        element: <SettingSystemPage />,
+        element: <SystemConfigPage />,
       },
     ],
   },
