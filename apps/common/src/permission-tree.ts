@@ -11,15 +11,31 @@ export interface PermissionTreeNode {
 
 function buildFullKey(
   node: Readonly<PermissionTreeNode>,
-  parentKey?: string
+  parentKey?: string,
 ): string {
   return parentKey ? `${parentKey}:${node.key}` : node.key;
+}
+
+function processTreeWithFullKeys(
+  nodes: readonly PermissionTreeNode[],
+  parentKey = "",
+): PermissionTreeNode[] {
+  return nodes.map((node) => {
+    const fullKey = parentKey ? `${parentKey}:${node.key}` : node.key;
+    return {
+      ...node,
+      key: fullKey,
+      children: node.children
+        ? processTreeWithFullKeys(node.children, fullKey)
+        : undefined,
+    };
+  });
 }
 
 function flattenPermissions(
   nodes: readonly PermissionTreeNode[],
   parentKey = "",
-  result: Record<string, PermissionTreeNode> = {}
+  result: Record<string, PermissionTreeNode> = {},
 ): Record<string, PermissionTreeNode> {
   for (const node of nodes) {
     const fullKey = buildFullKey(node, parentKey);
@@ -28,7 +44,7 @@ function flattenPermissions(
       const camelCaseKey = fullKey
         .split(":")
         .map((part, index) =>
-          index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
+          index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1),
         )
         .join("");
 
@@ -46,7 +62,7 @@ function flattenPermissions(
 export function getPermission(key: string): PermissionTreeNode | undefined {
   function search(
     nodes: readonly PermissionTreeNode[],
-    parentKey = ""
+    parentKey = "",
   ): PermissionTreeNode | undefined {
     for (const node of nodes) {
       const fullKey = buildFullKey(node, parentKey);
@@ -72,7 +88,7 @@ type CamelCase<S extends string> = S extends `${infer P}:${infer R}`
 
 type FlattenButtonPermissions<
   T,
-  ParentKey extends string = ""
+  ParentKey extends string = "",
 > = T extends readonly {
   key: infer K extends string;
   children?: infer C;
@@ -93,8 +109,8 @@ type FlattenButtonPermissions<
                 | FlattenButtonPermissions<Children, `${ParentKey}${Key}:`>
             : FlattenButtonPermissions<Children, `${ParentKey}${Key}:`>
           : Type extends "button"
-          ? CamelCase<`${ParentKey}${Key}`>
-          : never
+            ? CamelCase<`${ParentKey}${Key}`>
+            : never
         : never;
     }[number]
   : never;
@@ -104,6 +120,9 @@ export type AllPermissionKeys = FlattenButtonPermissions<
 >;
 
 export { PERMISSION_TREE };
+
+export const FULL_KEY_PERMISSION_TREE =
+  processTreeWithFullKeys(PERMISSION_TREE);
 
 export const PERMISSIONS: Record<AllPermissionKeys, PermissionTreeNode> =
   flattenPermissions(PERMISSION_TREE) as any;

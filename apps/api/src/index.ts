@@ -5,7 +5,7 @@ import { staticPlugin } from "@elysiajs/static";
 import { Elysia } from "elysia";
 import z from "zod";
 import { errorPlugin } from "./lib/error";
-import { logger, loggerPlugin } from "./lib/logger";
+import { loggerPlugin } from "./lib/logger";
 import { queueWorkerPlugin } from "./lib/queue-worker";
 import { responsePlugin } from "./lib/response";
 import { typeormPlugin } from "./lib/typeorm";
@@ -15,12 +15,12 @@ z.config(z.locales.zhCN());
 
 const app = new Elysia()
   .use(staticPlugin())
-  .use(errorPlugin)
+  .use(errorPlugin())
   .use(typeormPlugin())
-  .use(loggerPlugin)
+  .use(loggerPlugin())
   .use(cors())
-  .use(responsePlugin)
-  .use(queueWorkerPlugin({ workers: ["test"] }))
+  .use(responsePlugin())
+  .use(queueWorkerPlugin({ workers: ["mail"] }))
   .use(allRoutes)
   .listen(3000);
 

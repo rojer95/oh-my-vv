@@ -1,35 +1,15 @@
-import { useRequest } from "ahooks";
-import { useState } from "react";
-import { api } from "./lib/api";
+import { VersionTag } from "@/component/version-tag.tsx";
+import { useDark } from "@/hook/dark.hook";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./config/route";
 
 function App() {
-  const [msg, setMsg] = useState("");
-
-  const fetchData = async () => {
-    console.log("run fetchData");
-
-    // 1. GET 請求（帶有全自動補全）
-    const { data, error: error1 } = await api.api.permissions.tree.get();
-    console.log("data", data);
-
-    if (!error1) setMsg(data.message);
-
-    // 2. POST 請求（如果你輸入錯誤的類型，編譯器會報錯）
-    const { data: user, error: error2 } = await api.api.permissions.flat.get();
-    if (!error2) {
-      console.log("新用戶:", user);
-    } else {
-      alert(error2.value.message);
-    }
-  };
-
-  useRequest(fetchData);
-
+  useDark();
   return (
-    <div>
-      <h1>前端與後端已鏈接</h1>
-      <p>來自 API 的消息: {msg}</p>
-    </div>
+    <>
+      <VersionTag />
+      <RouterProvider router={router} />
+    </>
   );
 }
 

@@ -31,7 +31,7 @@ const defaultOptions: ConsoleFormatOptions = {
 
 const ConsoleFormat = (
   appName = "MyApp",
-  options: ConsoleFormatOptions = {}
+  options: ConsoleFormatOptions = {},
 ): Format => {
   // Merge default options with user-provided options
   const formatOptions: ConsoleFormatOptions = {
@@ -113,7 +113,7 @@ const ConsoleFormat = (
         (formattedMeta && formattedMeta !== "{}" ? ` - ${formattedMeta}` : "") +
         ` ${msPart}`
       );
-    }
+    },
   );
 };
 
@@ -135,7 +135,7 @@ const getWinstonLogger = () => {
         ConsoleFormat(process.env.APP_NAME || "MyApp", {
           colors: false,
           prettyPrint: true,
-        })
+        }),
       ),
     }),
   ];
@@ -152,9 +152,9 @@ const getWinstonLogger = () => {
           ConsoleFormat(process.env.APP_NAME || "MyApp", {
             colors: true,
             prettyPrint: true,
-          })
+          }),
         ),
-      })
+      }),
     );
   }
 
@@ -165,7 +165,5 @@ const getWinstonLogger = () => {
 
 export const logger = getWinstonLogger();
 
-export const loggerPlugin = new Elysia({ name: "lib_logger" }).decorate(
-  "logger",
-  logger
-);
+export const loggerPlugin = () =>
+  new Elysia({ name: "lib_logger" }).decorate("logger", logger);

@@ -5,3 +5,10 @@ export enum RoleDataPermType {
   departments = "departments",
   user = "user",
 }
+
+/**
+ * 账号类型
+ */
+export enum AccountType {
+  platform = "platform",
+}

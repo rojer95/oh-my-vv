@@ -1,0 +1,22 @@
+.fast-cell {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  .semi-icon {
+    margin-left: 4px;
+    color: var(--semi-color-tertiary);
+    opacity: 0.6;
+    transition: all 200ms;
+  }
+
+  &:hover {
+    .semi-icon {
+      opacity: 1;
+    }
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+  }
+}
