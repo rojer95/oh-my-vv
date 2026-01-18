@@ -18,6 +18,7 @@ import { LoginPage } from "../page/login";
 import { MerchantListPage } from "../page/merchant/list";
 import { ProfileInfoPage } from "../page/profile/info";
 import { DashboardPage } from "../page/statistic/dashboard";
+import { PERMISSIONS } from "@rojer/mf-common";
 
 /**
  * 路由handle附加数据定义
@@ -50,13 +51,14 @@ const mainRoute: RouteObject[] = [
     ],
   },
 
-  /**
   {
-    path: "config",
+    path: "system",
     handle: {
-      menu: "设置",
+      menu: "系统",
     },
     children: [
+      /**
+
       {
         path: "merchant",
         element: <MerchantListPage />,
@@ -117,35 +119,18 @@ const mainRoute: RouteObject[] = [
           },
         ],
       },
+   */
 
       {
-        path: "setting",
+        path: "config",
         handle: {
           menu: "系统配置",
+          access: PERMISSIONS.systemConfigView.key,
         },
-        children: [
-          {
-            path: "system",
-            handle: {
-              menu: "平台配置",
-              access: "system.setting",
-            },
-            element: <SettingSystemPage />,
-          },
-
-          {
-            path: "upload",
-            handle: {
-              menu: "上传配置",
-              access: "upload.setting",
-            },
-            element: <SettingUploadPage />,
-          },
-        ],
+        element: <SettingSystemPage />,
       },
     ],
   },
-   */
 ];
 
 const routes: RouteObject[] = [

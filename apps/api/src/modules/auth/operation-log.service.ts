@@ -1,8 +1,34 @@
+import { isPlainObject } from "lodash-es";
 import { SystemOperationLog } from "../../entity/system-operation-log.entity";
 import { logger } from "../../lib/logger";
 import { AppDataSource } from "../../lib/typeorm";
 
 export abstract class OperationLogService {
+  static sanitizeData(data: any): any {
+    if (!data || !isPlainObject(data)) return data;
+
+    const sensitiveFields = [
+      "password",
+      "pwd",
+      "secret",
+      "token",
+      "accessToken",
+      "refreshToken",
+    ];
+
+    const sanitized = { ...data };
+
+    for (const key in sanitized) {
+      if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
+        sanitized[key] = "************";
+      } else if (typeof sanitized[key] === "object") {
+        sanitized[key] = this.sanitizeData(sanitized[key]);
+      }
+    }
+
+    return sanitized;
+  }
+
   static async createOperationLog(options: {
     operatorId: number;
     operatorAccount: string;

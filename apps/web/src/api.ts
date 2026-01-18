@@ -1,9 +1,9 @@
+import { Toast } from "@douyinfe/semi-ui";
+import { treaty } from "@elysiajs/eden";
 import { STORAGE_AUTH_KEY } from "@rojer/mf-common";
 import type { App } from "../../api/src/index";
-import { treaty } from "@elysiajs/eden";
-import { Toast } from "@douyinfe/semi-ui";
 
-export const api = treaty<App>("http://localhost:3000", {
+export const api = treaty<App>(import.meta.env.VITE_API as string, {
   onRequest: () => {
     const token =
       localStorage[STORAGE_AUTH_KEY] ?? sessionStorage[STORAGE_AUTH_KEY];

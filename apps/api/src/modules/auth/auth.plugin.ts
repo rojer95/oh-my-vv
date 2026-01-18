@@ -4,11 +4,10 @@ import { BusinessErrorCode, PermissionTreeNode } from "@rojer/mf-common";
 import Elysia from "elysia";
 import { JwtPayload } from "../../interface";
 import { BusinessError } from "../../lib/error";
-import { OperationLogService } from "./operation-log.service";
-import { AuthService } from "./auth.service";
-import { SystemAccountService } from "./system-account.service";
-import { sanitizeData } from "./util";
 import { ipPlugin } from "../../lib/ip";
+import { AuthService } from "./auth.service";
+import { OperationLogService } from "./operation-log.service";
+import { SystemAccountService } from "./system-account.service";
 
 export const auth = new Elysia({ name: "lib_auth" })
   .use(bearer())
@@ -85,9 +84,9 @@ export const auth = new Elysia({ name: "lib_auth" })
           path: url.pathname,
           ip: ip,
           requestData: {
-            query: query ? sanitizeData(query) : {},
-            params: params ? sanitizeData(params) : {},
-            body: body ? sanitizeData(body) : undefined,
+            query: query ? OperationLogService.sanitizeData(query) : {},
+            params: params ? OperationLogService.sanitizeData(params) : {},
+            body: body ? OperationLogService.sanitizeData(body) : undefined,
           },
           success,
           errorMessage,

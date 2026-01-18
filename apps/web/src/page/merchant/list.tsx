@@ -6,11 +6,10 @@ import { useMemo, useRef, useState } from "react";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { adminModel } from "@/mobx/admin";
-import { AccountType, GET_STORAGE_AUTH_KEY } from "@fshop/shared";
 import { api } from "../../api";
 
 export const MerchantListPage = () => {
-  const tableRef = useRef<SchemaTableInstance>();
+  const tableRef = useRef<SchemaTableInstance>(null);
   const [editVisible, setEditVisible] = useState(false);
   const [mode, setMode] = useState<"create" | "update" | "reset">("create");
   const [initValues, setInitValues] = useState<any>({});
@@ -101,7 +100,7 @@ export const MerchantListPage = () => {
               "logo",
               "desc",
               "address",
-            ])
+            ]),
           );
           setEditVisible(true);
         }}
@@ -147,7 +146,7 @@ export const MerchantListPage = () => {
                   onClick: async () => {
                     const { token } = await api.v1.merchant.enter(record.id);
                     const MERCHANT_STORAGE_AUTH_KEY = GET_STORAGE_AUTH_KEY(
-                      AccountType.merchant
+                      AccountType.merchant,
                     );
                     localStorage.removeItem(MERCHANT_STORAGE_AUTH_KEY);
                     sessionStorage.removeItem(MERCHANT_STORAGE_AUTH_KEY);

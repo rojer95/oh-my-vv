@@ -12,7 +12,7 @@ import {
 import { CheckboxEvent } from "@douyinfe/semi-ui/lib/es/checkbox";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 
-import fshopLogo from "@/asset/fshop.svg";
+import logo from "@/asset/logo.svg";
 import { TimerButton } from "@/component/timer-button";
 import { TotpModal } from "@/component/totp-modal";
 import { adminModel } from "@/mobx/admin";
@@ -167,8 +167,8 @@ export const LoginPage = () => {
       />
 
       <div className="login-form">
-        <div className="channel-tag">平台端</div>
-        <img className="logo" src={import.meta.env.VITE_LOGO || fshopLogo} />
+        {/* <div className="channel-tag"></div> */}
+        <img className="logo" src={import.meta.env.VITE_LOGO || logo} />
         <div className="header">
           <Typography.Title heading={1}>
             {mode === "login" ? `欢迎回来` : `找回密码`}

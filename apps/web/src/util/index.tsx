@@ -1,5 +1,4 @@
 export { checkAccess } from "./access";
-export { generateBaseApi } from "./axios";
 export { getDisabledProps } from "./date";
 export { getFileExt } from "./ext";
 export { Fonts, createFontFace2HTMLByTTF } from "./font";

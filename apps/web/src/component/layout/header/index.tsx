@@ -1,4 +1,4 @@
-import fshopLogo from "@/asset/fshop.svg";
+import logo from "@/asset/logo.svg";
 import { IconMenu } from "@douyinfe/semi-icons";
 import { Button, Layout, Nav, Space } from "@douyinfe/semi-ui";
 import { PropsWithChildren } from "react";
@@ -49,7 +49,7 @@ export const Header = ({ children }: PropsWithChildren) => {
                     objectFit: "contain",
                     objectPosition: "center",
                   }}
-                  src={import.meta.env.VITE_LOGO || fshopLogo}
+                  src={import.meta.env.VITE_LOGO || logo}
                 />
               }
               text={import.meta.env.VITE_TITLE}
