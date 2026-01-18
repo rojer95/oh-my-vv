@@ -35,7 +35,7 @@ export const auth = new Elysia({ name: "lib_auth" })
   })
   .macro({
     auth: (permission: PermissionTreeNode | true) => ({
-      async beforeHandle({ set, user }) {
+      async beforeHandle({ user }) {
         if (!user) {
           throw new BusinessError(BusinessErrorCode.Unauthorized);
         }
@@ -48,15 +48,8 @@ export const auth = new Elysia({ name: "lib_auth" })
         if (!hasPerm) {
           throw new BusinessError(BusinessErrorCode.Forbidden);
         }
-
-        set.headers["x-permission-key"] = permission.key;
-        set.headers["x-permission-name"] = permission.action || permission.name;
-        set.headers["x-permission-loggable"] = String(
-          permission.loggable !== false,
-        );
       },
       async afterResponse({
-        set,
         request,
         params,
         query,
@@ -65,21 +58,24 @@ export const auth = new Elysia({ name: "lib_auth" })
         responseValue,
         ip,
       }) {
-        const needsLog = set.headers["x-permission-loggable"] === "true";
+        const needsLog = permission !== true && permission.loggable !== false;
 
         if (!needsLog || !user) return;
 
-        const success = (responseValue as any)?.response?.code === 0;
+        const fail =
+          typeof (responseValue as any)?.response?.code === "number" &&
+          (responseValue as any)?.response?.code !== 0;
+
         let errorMessage: string | undefined = undefined;
-        if (!success) errorMessage = (responseValue as any)?.response?.message;
+        if (fail) errorMessage = (responseValue as any)?.response?.message;
         const url = new URL(request.url);
 
         await OperationLogService.createOperationLog({
           operatorId: user.id!,
           operatorAccount: user.account!,
           operatorName: user.realName!,
-          permissionKey: set.headers["x-permission-key"] as string,
-          permissionName: set.headers["x-permission-name"] as string,
+          permissionKey: permission.key,
+          permissionName: permission.action || permission.name,
           method: request.method,
           path: url.pathname,
           ip: ip,
@@ -88,7 +84,7 @@ export const auth = new Elysia({ name: "lib_auth" })
             params: params ? OperationLogService.sanitizeData(params) : {},
             body: body ? OperationLogService.sanitizeData(body) : undefined,
           },
-          success,
+          success: !fail,
           errorMessage,
         });
       },

@@ -1,4 +1,4 @@
-import Elysia, { ElysiaCustomStatusResponse } from "elysia";
+import Elysia, { ElysiaCustomStatusResponse, status } from "elysia";
 
 export const responsePlugin = () =>
   new Elysia({ name: "lib_response" }).mapResponse(

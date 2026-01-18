@@ -52,14 +52,6 @@ export abstract class OperationLogService {
         ...options,
         tenantId: 1,
       });
-
-      logger.info("操作日志记录成功", {
-        context: "OperationLog",
-        operator: options.operatorAccount,
-        permission: options.permissionKey,
-        path: options.path,
-        success: options.success,
-      });
     } catch (error) {
       logger.error("操作日志记录失败", error, {
         context: "OperationLog",

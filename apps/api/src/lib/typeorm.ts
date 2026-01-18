@@ -10,6 +10,7 @@ import { SystemOperationLog } from "../entity/system-operation-log.entity";
 import { SystemRole } from "../entity/system-role.entity";
 import { SystemTenant } from "../entity/system-tenant.entity";
 import { logger } from "./logger";
+import { SystemConfig } from "../entity/system-config.entity";
 
 export class TypeORMLogger extends FileLogger implements Logger {
   constructor(readonly typeormLogger: WinstonLogger) {
@@ -67,6 +68,7 @@ export const AppDataSource = new DataSource({
     SystemRole,
     SystemTenant,
     SystemOperationLog,
+    SystemConfig,
   ],
   namingStrategy: new SnakeNamingStrategy(),
   logger: new TypeORMLogger(logger),
