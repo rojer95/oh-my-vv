@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 
-export const ipPlugin = new Elysia().derive(
+export const ipPlugin = new Elysia().resolve(
   { as: "global" },
   ({ request, server }) => {
     const ip =

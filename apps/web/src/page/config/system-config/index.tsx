@@ -127,11 +127,9 @@ export const SystemConfigPage = () => {
           {
             dataIndex: "buildIn",
             title: "内置",
-            type: "fast-switch",
+            type: "switch",
+            showInFilter: true,
             width: 80,
-            props: {
-              disabled: true,
-            },
           },
           {
             dataIndex: "note",

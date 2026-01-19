@@ -12,4 +12,6 @@ export const BusinessErrorCode = {
   TotpTokenError: [10007, "多重验证验证码错误，您还有{{t}}次机会"],
   CaptchaCodeError: [10008, "验证验证码错误"],
   AccountNotBindMain: [10009, "该账号还未绑定邮箱"],
+  SystemConfigKeyAlreadyExists: [10010, "参数键名已存在"],
+  SystemConfigBuildInCanNotDelelte: [10010, "系统内置配置不可删除"],
 } as const;

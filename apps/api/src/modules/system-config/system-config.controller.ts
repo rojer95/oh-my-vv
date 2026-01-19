@@ -26,24 +26,6 @@ export const systemConfigController = new Elysia({ name: "systemConfig" })
           findManyOption: { tenantId: false },
         },
       )
-      .get(
-        "/:id",
-        async ({ params }) => {
-          return await SystemConfigService.findById(Number(params.id));
-        },
-        {
-          auth: PERMISSIONS.systemConfigView,
-        },
-      )
-      .get(
-        "/key/:key",
-        async ({ params }) => {
-          return await SystemConfigService.findByKey(params.key);
-        },
-        {
-          auth: PERMISSIONS.systemConfigView,
-        },
-      )
       .post(
         "",
         async ({ body }) => {

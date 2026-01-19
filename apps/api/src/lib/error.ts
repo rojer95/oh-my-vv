@@ -24,31 +24,46 @@ export class BusinessError extends Error {
 export const errorPlugin = () =>
   new Elysia({ name: "lib_error" })
     .error({ BusinessError })
-    .onError({ as: "global" }, ({ error, code }) => {
+    .onError({ as: "global" }, ({ error, code, set }) => {
+      let message: string = String(code);
+      let res;
+
       switch (code) {
         case "BusinessError":
-          return status(200, {
+          message = error.getMessage();
+          res = status(200, {
             code: error.errCode,
             message: error.getMessage(),
           });
+          break;
 
         case "NOT_FOUND":
-          return status(200, { code: 404, message: code });
+          res = status(200, { code: 404, message: code });
+          break;
 
         case "VALIDATION":
-          return status(200, { code: 400, message: error.customError });
+          res = status(200, { code: 400, message: error.customError });
+          break;
 
         case "PARSE":
         case "INVALID_FILE_TYPE":
-          return status(200, { code: 400, message: code });
+          res = status(200, { code: 400, message: code });
+          break;
 
         case "INTERNAL_SERVER_ERROR":
-          return status(200, { code: 500, message: code });
+          res = status(200, { code: 500, message: code });
+          break;
 
         case "INVALID_COOKIE_SIGNATURE":
-          return status(200, { code: 401, message: code });
+          res = status(200, { code: 401, message: code });
+          break;
+
+        default:
+          logger.error(error);
+          res = status(200, { code: 500, message: (error as Error)?.message });
+          break;
       }
 
-      logger.error(error);
-      return status(200, { code: 500, message: (error as Error)?.message });
+      set.headers["x-error-signal"] = encodeURIComponent(message);
+      return res;
     });

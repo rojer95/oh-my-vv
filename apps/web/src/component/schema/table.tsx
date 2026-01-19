@@ -146,7 +146,12 @@ export const SchemaTable = observer(
     createButtonText = "创建",
     updateButtonText = "编辑",
     deleteButtonText = "删除",
-    deletePopconfirmProps = false,
+    deletePopconfirmProps = {
+      title: "操作确认",
+      content: "是否确认要删除该条数据？",
+      okType: "danger",
+      okText: "确认删除",
+    },
     updateProps = {},
     deleteProps = {},
     onRefresh,
@@ -175,7 +180,7 @@ export const SchemaTable = observer(
         return (
           columns
             ?.filter(
-              (i) => i.type !== "action" && !i.hiddenInTable && !!i.dataIndex
+              (i) => i.type !== "action" && !i.hiddenInTable && !!i.dataIndex,
             )
             ?.map((i) => ({
               label: i.title as string,
@@ -212,14 +217,14 @@ export const SchemaTable = observer(
       setFilters(
         columns
           .filter((i) => i.showInFilter)
-          .map((i) => ({ ...i, required: false }))
+          .map((i) => ({ ...i, required: false })),
       );
     }, [columns]);
 
     const [where, setWhere] = useState<FilterItem[] | undefined>(undefined);
     const [sorter, setSorter] = useState<TableSort | undefined>(defaultSort);
 
-    const filterRef = useRef<FormApi>();
+    const filterRef = useRef<FormApi>(undefined);
 
     const realFilterInitValues: BaseFormProps["initValues"] = useMemo(() => {
       if (!filterInitValues) return undefined;
@@ -263,7 +268,7 @@ export const SchemaTable = observer(
         defaultPageSize: defaultPageSize,
         refreshDeps: [where, sorter, currentTabValue, ...refreshDeps],
         ready: !!request,
-      }
+      },
     );
 
     useEffect(() => {
@@ -301,7 +306,7 @@ export const SchemaTable = observer(
           filterRef.current?.submitForm?.();
         },
       }),
-      [tableData, filters, schemas]
+      [tableData, filters, schemas],
     );
 
     const ActionBar = useMemo(() => {
@@ -453,7 +458,7 @@ export const SchemaTable = observer(
         ...columns
           .filter((i) => i.type !== "action" && !i.hiddenInTable)
           .filter((i) =>
-            tableInnerProps.cols.value.includes(i.dataIndex as string)
+            tableInnerProps.cols.value.includes(i.dataIndex as string),
           )
           .map((column) => {
             const {
@@ -491,7 +496,7 @@ export const SchemaTable = observer(
               realTitle.push(
                 <Tooltip key="helper" content={helper}>
                   <IconHelpCircle style={{ color: "--semi-color-text-1" }} />
-                </Tooltip>
+                </Tooltip>,
               );
             }
 
@@ -508,7 +513,7 @@ export const SchemaTable = observer(
                 text: any,
                 record: any,
                 index: number,
-                options?: RenderOptions
+                options?: RenderOptions,
               ) => (
                 <SchemaTableColumn
                   value={text}
@@ -574,7 +579,7 @@ export const SchemaTable = observer(
 
           const allActions = sortBy(
             actions.map((i) => ({ ...i, sort: i.sort ?? 0 })),
-            "sort"
+            "sort",
           )?.filter((tableColumnProps: TableRowActionProps) => {
             // 权限过滤
             if (
@@ -667,7 +672,7 @@ export const SchemaTable = observer(
               ) : null}
             </Space>,
             undefined,
-            record
+            record,
           );
         },
       });
@@ -755,5 +760,5 @@ export const SchemaTable = observer(
         </Container>
       </SchemaContext.Provider>
     );
-  }
+  },
 );

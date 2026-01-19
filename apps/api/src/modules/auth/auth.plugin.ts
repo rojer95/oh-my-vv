@@ -18,7 +18,7 @@ export const auth = new Elysia({ name: "lib_auth" })
     }),
   )
   .use(ipPlugin)
-  .derive({ as: "global" }, async ({ bearer, loginJwt }) => {
+  .resolve({ as: "global" }, async ({ bearer, loginJwt }) => {
     if (bearer) {
       try {
         const payload = (await loginJwt.verify(
@@ -49,25 +49,19 @@ export const auth = new Elysia({ name: "lib_auth" })
           throw new BusinessError(BusinessErrorCode.Forbidden);
         }
       },
-      async afterResponse({
-        request,
-        params,
-        query,
-        body,
-        user,
-        responseValue,
-        ip,
-      }) {
-        const needsLog = permission !== true && permission.loggable !== false;
 
+      async afterResponse({ request, params, query, body, user, ip, set }) {
+        const needsLog = permission !== true && permission.loggable !== false;
         if (!needsLog || !user) return;
 
-        const fail =
-          typeof (responseValue as any)?.response?.code === "number" &&
-          (responseValue as any)?.response?.code !== 0;
+        const errorSignal = set.headers["x-error-signal"];
 
+        const success = !errorSignal;
         let errorMessage: string | undefined = undefined;
-        if (fail) errorMessage = (responseValue as any)?.response?.message;
+        if (!success) {
+          errorMessage = decodeURIComponent(errorSignal as string);
+        }
+
         const url = new URL(request.url);
 
         await OperationLogService.createOperationLog({
@@ -84,8 +78,8 @@ export const auth = new Elysia({ name: "lib_auth" })
             params: params ? OperationLogService.sanitizeData(params) : {},
             body: body ? OperationLogService.sanitizeData(body) : undefined,
           },
-          success: !fail,
-          errorMessage,
+          success,
+          errorMessage: errorMessage ? errorMessage.slice(0, 512) : undefined,
         });
       },
     }),

@@ -68,7 +68,7 @@ export class SystemOperationLog1768620659126 implements MigrationInterface {
           },
           {
             name: "request_data",
-            type: PgDataType.jsonb,
+            type: PgDataType.json,
             comment: "请求数据",
           },
           {
@@ -99,7 +99,7 @@ export class SystemOperationLog1768620659126 implements MigrationInterface {
             columnNames: ["permission_key"],
           },
         ],
-      })
+      }),
     );
   }
 

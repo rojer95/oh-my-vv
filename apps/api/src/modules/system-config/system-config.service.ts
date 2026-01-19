@@ -8,18 +8,19 @@ import {
   SystemConfigCreateZod,
   SystemConfigUpdateZod,
 } from "./system-config.dto";
+import { pick } from "lodash-es";
 
 export abstract class SystemConfigService {
-  static repository() {
+  static get repo() {
     return AppDataSource.getRepository(SystemConfig);
   }
 
   static async findAndCount(options: FindManyOptions<SystemConfig>) {
-    return await this.repository().findAndCount(options);
+    return await this.repo.findAndCount(options);
   }
 
   static async findById(id: number) {
-    const config = await this.repository().findOne({ where: { id } });
+    const config = await this.repo.findOne({ where: { id } });
     if (!config) {
       throw new BusinessError(BusinessErrorCode.NotFound);
     }
@@ -27,7 +28,7 @@ export abstract class SystemConfigService {
   }
 
   static async findByKey(key: string) {
-    const config = await this.repository().findOne({ where: { key } });
+    const config = await this.repo.findOne({ where: { key } });
     if (!config) {
       throw new BusinessError(BusinessErrorCode.NotFound);
     }
@@ -35,13 +36,14 @@ export abstract class SystemConfigService {
   }
 
   static async create(dto: z.infer<typeof SystemConfigCreateZod>) {
-    const exist = await this.repository().findOne({ where: { key: dto.key } });
+    const exist = await this.repo.findOne({ where: { key: dto.key } });
+
     if (exist) {
-      throw new BusinessError(BusinessErrorCode.AlreadyExists);
+      throw new BusinessError(BusinessErrorCode.SystemConfigKeyAlreadyExists);
     }
 
-    const config = this.repository().create(dto);
-    return await this.repository().save(config);
+    const config = this.repo.create(dto);
+    return await this.repo.save(config);
   }
 
   static async update(id: number, dto: z.infer<typeof SystemConfigUpdateZod>) {
@@ -51,17 +53,19 @@ export abstract class SystemConfigService {
       throw new BusinessError(BusinessErrorCode.Forbidden);
     }
 
-    Object.assign(config, dto);
-    return await this.repository().save(config);
+    this.repo.merge(config, pick(dto, ["name", "value", "note"]));
+    return await this.repo.save(config);
   }
 
   static async delete(id: number) {
     const config = await this.findById(id);
 
     if (config.buildIn) {
-      throw new BusinessError(BusinessErrorCode.Forbidden);
+      throw new BusinessError(
+        BusinessErrorCode.SystemConfigBuildInCanNotDelelte,
+      );
     }
 
-    await this.repository().remove(config);
+    await this.repo.remove(config);
   }
 }
