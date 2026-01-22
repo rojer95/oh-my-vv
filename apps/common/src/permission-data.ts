@@ -73,6 +73,34 @@ export const PERMISSION_TREE = [
           },
         ],
       },
+      {
+        key: "role",
+        name: "角色管理",
+        type: "menu",
+        children: [
+          {
+            key: "view",
+            name: "查看角色",
+            type: "button",
+            loggable: false,
+          },
+          {
+            key: "create",
+            name: "新增角色",
+            type: "button",
+          },
+          {
+            key: "update",
+            name: "修改角色",
+            type: "button",
+          },
+          {
+            key: "delete",
+            name: "删除角色",
+            type: "button",
+          },
+        ],
+      },
     ],
   },
 ] as const;

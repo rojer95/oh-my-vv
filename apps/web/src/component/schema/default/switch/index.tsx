@@ -41,7 +41,11 @@ export const _switch = {
     ) : (
       <Form.RadioGroup
         {...props}
-        options={optionsUtils.transfrom(props.options ?? defaultOptions)}
+        options={optionsUtils.transfrom(
+          props.options ?? defaultOptions,
+          props?.valueKey,
+          props?.labelKey,
+        )}
       />
     );
   },

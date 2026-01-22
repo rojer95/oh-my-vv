@@ -10,6 +10,10 @@ export abstract class SystemAccountService {
     return AppDataSource.getRepository(SystemAccount);
   }
 
+  static async find(options: FindManyOptions<SystemAccount>) {
+    return await this.repo.find(options);
+  }
+
   static async findAndCount(options: FindManyOptions<SystemAccount>) {
     return await this.repo.findAndCount(options);
   }

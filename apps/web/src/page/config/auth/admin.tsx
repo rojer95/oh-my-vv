@@ -181,7 +181,7 @@ export const AdminPage = () => {
               "roles",
               "phone",
               "mail",
-            ])
+            ]),
           );
           setEditVisible(true);
         }}

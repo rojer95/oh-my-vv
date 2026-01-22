@@ -42,7 +42,11 @@ export const FastSwitch = observer((props: any) => {
   };
 
   const options = useMemo(() => {
-    return optionsUtils.transfrom(props.options ?? defaultOptions);
+    return optionsUtils.transfrom(
+      props.options ?? defaultOptions,
+      props?.valueKey,
+      props?.labelKey,
+    );
   }, [props.options, defaultOptions]);
 
   return (

@@ -16,4 +16,6 @@ export const BusinessErrorCode = {
   SystemConfigBuildInCanNotDelelte: [10010, "系统内置配置不可删除"],
   SystemAccountNotFound: [10020, "账户不存在"],
   SystemAccountAlreadyExists: [10021, "账户已存在"],
+  SystemRoleNotFound: [10030, "角色不存在"],
+  SystemRoleAlreadyExists: [10031, "角色已存在"],
 } as const;

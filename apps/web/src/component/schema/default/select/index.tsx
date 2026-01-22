@@ -9,7 +9,12 @@ export const select = {
     if (props.group) {
       return props?.options
         ?.map((i: any) => {
-          return optionsUtils.getLabelStringByValue(i.children, props.value);
+          return optionsUtils.getLabelStringByValue(
+            i.children,
+            props.value,
+            props?.valueKey,
+            props?.labelKey,
+          );
         })
         ?.join("、");
     }
@@ -18,14 +23,19 @@ export const select = {
       return <TagDisplay {...props} />;
     }
 
-    return optionsUtils.getLabelStringByValue(props.options, props.value);
+    return optionsUtils.getLabelStringByValue(
+      props.options,
+      props.value,
+      props?.valueKey,
+      props?.labelKey,
+    );
   },
   renderForm: (props) => {
     const data = optionsUtils.transfrom(
       props.options,
-      "value",
-      "label",
-      !(props?.filter === true)
+      props?.valueKey,
+      props?.labelKey,
+      !(props?.filter === true),
     );
     return (
       <Form.Select

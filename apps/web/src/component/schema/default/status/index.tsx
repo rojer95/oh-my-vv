@@ -11,7 +11,11 @@ export const status = {
   renderForm: (props) => (
     <Form.RadioGroup
       {...props}
-      options={optionsUtils.transfrom(props.options)}
+      options={optionsUtils.transfrom(
+        props.options,
+        props?.valueKey,
+        props?.labelKey,
+      )}
     />
   ),
 } as SchemaDefined;

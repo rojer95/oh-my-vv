@@ -6,7 +6,9 @@ export const StatusRender = (props: any) => {
   const Ret = useMemo(() => {
     const targets = optionsUtils.getOptionArrayByValue(
       props.options,
-      props.value
+      props.value,
+      props?.valueKey,
+      props?.labelKey,
     );
 
     if (targets.length === 0) return "-";

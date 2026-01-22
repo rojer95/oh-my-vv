@@ -48,7 +48,11 @@ export const FastSelect = (props: any) => {
           }}
           size="small"
           style={{ minWidth: 80 }}
-          optionList={optionsUtils.transfrom(props.options ?? defaultOptions)}
+          optionList={optionsUtils.transfrom(
+            props.options ?? defaultOptions,
+            props?.valueKey,
+            props?.labelKey,
+          )}
         />
         <Button
           onClick={submit}

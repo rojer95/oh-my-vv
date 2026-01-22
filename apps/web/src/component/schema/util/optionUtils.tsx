@@ -5,7 +5,7 @@ export const optionsUtils = {
     option: string | Array<any>,
     valueKey = "value",
     labelKey = "label",
-    isSpan = true
+    isSpan = true,
   ) => {
     let ops: string | Array<any> = option;
     if (typeof ops === "string") {
@@ -13,7 +13,7 @@ export const optionsUtils = {
         (i) => ({
           label: i,
           value: i,
-        })
+        }),
       );
     }
 
@@ -35,7 +35,7 @@ export const optionsUtils = {
     value: any,
     valueKey = "value",
     labelKey = "label",
-    isSpan = true
+    isSpan = true,
   ) => {
     if (value === undefined || value === null) return [];
     const ops = optionsUtils.transfrom(option, valueKey, labelKey, isSpan);
@@ -48,14 +48,14 @@ export const optionsUtils = {
     option: string | Array<any>,
     value: any,
     valueKey = "value",
-    labelKey = "label"
+    labelKey = "label",
   ) => {
     const options = optionsUtils.getOptionArrayByValue(
       option,
       value,
       valueKey,
       labelKey,
-      false
+      false,
     );
 
     return options?.length === 0

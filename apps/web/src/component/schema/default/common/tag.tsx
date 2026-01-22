@@ -6,7 +6,9 @@ import { optionsUtils } from "../../util";
 export const TagDisplay = (props: any) => {
   const targets = optionsUtils.getOptionArrayByValue(
     props.options,
-    props.value
+    props.value,
+    props?.valueKey,
+    props?.labelKey,
   );
 
   if (targets.length === 0) return <>-</>;

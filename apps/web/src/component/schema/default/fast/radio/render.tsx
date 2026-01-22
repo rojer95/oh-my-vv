@@ -59,7 +59,11 @@ export const FastRadio = (props: any) => {
           onChange={(e) => {
             setEditValue(e.target.value);
           }}
-          options={optionsUtils.transfrom(props.options ?? defaultOptions)}
+          options={optionsUtils.transfrom(
+            props.options ?? defaultOptions,
+            props?.valueKey,
+            props?.labelKey,
+          )}
         />
         <Button
           onClick={submit}

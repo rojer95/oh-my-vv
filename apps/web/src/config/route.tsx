@@ -6,21 +6,12 @@ import {
 } from "@/component/layout";
 import { RouteObject, createHashRouter } from "react-router-dom";
 
-import { AttachmentPage } from "../page/attachment";
-import { AdminPage } from "../page/config/auth/admin";
-import { OplogPage } from "../page/config/auth/oplog";
-import { RolePage } from "../page/config/auth/role";
-import { DictPage } from "../page/config/dict/dict";
-import { SettingSystemPage } from "../page/config/setting/system";
-import { SettingUploadPage } from "../page/config/setting/upload";
-import { SystemConfigPage } from "../page/config/system-config";
-import { SystemAccountPage } from "../page/system/account";
-import { LoginPage } from "../page/login";
-
-import { MerchantListPage } from "../page/merchant/list";
-import { ProfileInfoPage } from "../page/profile/info";
-import { DashboardPage } from "../page/statistic/dashboard";
 import { PERMISSIONS } from "@rojer/mf-common";
+import { SystemConfigPage } from "../page/config/system-config";
+import { LoginPage } from "../page/login";
+import { DashboardPage } from "../page/statistic/dashboard";
+import { SystemAccountPage } from "../page/system/account";
+import { RolePage } from "../page/system/role";
 
 /**
  * 路由handle附加数据定义
@@ -133,12 +124,28 @@ const mainRoute: RouteObject[] = [
       },
 
       {
-        path: "account",
+        path: "auth",
         handle: {
-          menu: "账户管理",
-          access: PERMISSIONS.systemAccountView.key,
+          menu: "权限&账户",
         },
-        element: <SystemAccountPage />,
+        children: [
+          {
+            path: "account",
+            handle: {
+              menu: "账户管理",
+              access: PERMISSIONS.systemAccountView.key,
+            },
+            element: <SystemAccountPage />,
+          },
+          {
+            path: "role",
+            handle: {
+              menu: "角色",
+              access: PERMISSIONS.systemRoleView.key,
+            },
+            element: <RolePage />,
+          },
+        ],
       },
     ],
   },

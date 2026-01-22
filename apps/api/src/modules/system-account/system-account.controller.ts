@@ -8,12 +8,29 @@ import {
   SystemAccountUpdateZod,
 } from "./system-account.dto";
 import { SystemAccountService } from "./system-account.service";
+import { SystemRoleService } from "../system-role/system-role.service";
 
 export const systemAccountController = new Elysia({ name: "systemAccount" })
   .use(auth)
   .use(findManyOption)
   .group("system-account", (app) =>
     app
+      .get(
+        "options",
+        async () => {
+          const roles = await SystemRoleService.find({
+            where: {
+              active: true,
+            },
+            select: ["id", "name"],
+          });
+
+          return { roles };
+        },
+        {
+          auth: PERMISSIONS.systemAccountView,
+        },
+      )
       .post(
         "read",
         async ({ findManyOption }) => {

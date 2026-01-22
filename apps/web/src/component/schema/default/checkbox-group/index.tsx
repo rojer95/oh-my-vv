@@ -5,11 +5,20 @@ import { SchemaColumnBase, SchemaDefined } from "../../typing";
 
 export const checkboxGroup = {
   render: (props) =>
-    optionsUtils.getLabelStringByValue(props.options, props.value),
+    optionsUtils.getLabelStringByValue(
+      props.options,
+      props.value,
+      props?.valueKey,
+      props?.labelKey,
+    ),
   renderForm: (props) => (
     <Form.CheckboxGroup
       {...props}
-      options={optionsUtils.transfrom(props.options)}
+      options={optionsUtils.transfrom(
+        props.options,
+        props?.valueKey,
+        props?.labelKey,
+      )}
     />
   ),
 } as SchemaDefined;

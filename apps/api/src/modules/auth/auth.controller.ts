@@ -53,8 +53,7 @@ export const authController = new Elysia()
 
           // 生成token
           const token = await loginJwt.sign({
-            uid: systemAccount.id,
-            accountType: systemAccount.accountType,
+            userId: systemAccount.id,
             exp: "2d",
           });
 

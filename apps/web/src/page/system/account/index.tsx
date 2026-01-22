@@ -3,22 +3,8 @@ import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { Tag, Toast } from "@douyinfe/semi-ui";
 import { PASSWORD_PATTERN } from "@rojer/mf-common";
+import { useRequest } from "ahooks";
 import { useRef, useState } from "react";
-
-const mockRoles = [
-  { id: 1, name: "超级管理员" },
-  { id: 2, name: "管理员" },
-  { id: 3, name: "编辑" },
-  { id: 4, name: "查看者" },
-];
-
-const getRoleNames = (roleIds: number[]) => {
-  return (
-    roleIds
-      ?.map((id) => mockRoles.find((r) => r.id === id)?.name)
-      .filter(Boolean) || []
-  );
-};
 
 export const SystemAccountPage = () => {
   const tableRef = useRef<SchemaTableInstance>(undefined);
@@ -26,6 +12,9 @@ export const SystemAccountPage = () => {
   const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
   const [initValues, setInitValues] = useState<any>({});
   const [targetAccount, setTargetAccount] = useState<any>(null);
+  const { data: options } = useRequest(
+    apiProxy(api.api.v1["system-account"].options.get),
+  );
 
   const onSubmit = async (value: any) => {
     if (initValues?.id) {
@@ -114,11 +103,10 @@ export const SystemAccountPage = () => {
             type: ({ values }) => (values?.isSuper ? "hidden" : "select"),
             required: ({ values }) => (values?.isSuper ? false : true),
             props: {
+              labelKey: "name",
+              valueKey: "id",
               multiple: true,
-              options: mockRoles.map((r) => ({
-                value: r.id,
-                label: r.name,
-              })),
+              options: options?.roles || [],
             },
           },
           {
@@ -215,12 +203,6 @@ export const SystemAccountPage = () => {
             dataIndex: "role",
             title: "角色",
             width: 150,
-            render: (roles: number[]) =>
-              getRoleNames(roles).map((name) => (
-                <Tag key={name} color="blue">
-                  {name}
-                </Tag>
-              )),
           },
           {
             dataIndex: "active",

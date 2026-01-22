@@ -18,7 +18,7 @@ export type SchemaFormProps = {
   getFormApi?: BaseFormProps["getFormApi"];
   onSubmit?: (
     values: any,
-    e?: React.FormEvent<HTMLFormElement>
+    e?: React.FormEvent<HTMLFormElement>,
   ) => (void | boolean) | Promise<void | boolean>;
   onReset?: BaseFormProps["onReset"];
   onSuccess?: () => void;
@@ -53,8 +53,8 @@ const SchemaFormBase = ({
   renderExtraButton,
 }: SchemaFormProps) => {
   const [currentChangedValue, setCurrentChangedValue] = useState({});
-  const formRef = useRef<any>();
-  const formApi = useRef<FormApi>();
+  const formRef = useRef<any>(undefined);
+  const formApi = useRef<FormApi>(undefined);
   const [valueVersion, setValueVersion] = useState(0);
 
   const defaultSubmitButtonProps = {
@@ -95,7 +95,7 @@ const SchemaFormBase = ({
             setCurrentChangedValue(
               Object.keys(changedValue).reduce((p, k) => {
                 return set(p, k, changedValue[k]);
-              }, {})
+              }, {}),
             );
             formProps?.onValueChange?.(values, changedValue);
           }}
@@ -109,7 +109,7 @@ const SchemaFormBase = ({
 
             /** 以下是TAB自动定位错误逻辑 */
             const tabs = document.querySelector(
-              `[x-form-id="${formRef.current?.state?.formId}"] ._form_tabs`
+              `[x-form-id="${formRef.current?.state?.formId}"] ._form_tabs`,
             );
 
             if (!tabs) return;
@@ -127,7 +127,7 @@ const SchemaFormBase = ({
             if (!tabFiled) return;
 
             const errMsgDom = document.querySelector(
-              `[x-form-id="${formRef.current?.state?.formId}"] .semi-form-field-error-message`
+              `[x-form-id="${formRef.current?.state?.formId}"] .semi-form-field-error-message`,
             );
 
             if (errMsgDom) {
@@ -199,7 +199,7 @@ const SchemaFromModal = ({
   loading,
   ...props
 }: SchemaFormProps) => {
-  const formApi = useRef<FormApi>();
+  const formApi = useRef<FormApi>(undefined);
 
   return (
     <Modal
@@ -220,6 +220,7 @@ const SchemaFromModal = ({
         ...(modalProps?.bodyStyle || {}),
         paddingRight: 4,
       }}
+      centered={modalProps?.centered ?? true}
     >
       <SchemaFormBase
         {...props}
@@ -255,7 +256,7 @@ export const SchemaForm = ({
     {
       manual: true,
       onSuccess,
-    }
+    },
   );
 
   const Form = (layout && SchemaFormLayout[layout]) || SchemaFormBase;

@@ -8,6 +8,7 @@ import { ipPlugin } from "../../lib/ip";
 import { SystemAccountService } from "../system-account/system-account.service";
 import { AuthService } from "./auth.service";
 import { OperationLogService } from "./operation-log.service";
+import { isFinite } from "lodash-es";
 
 export const auth = new Elysia({ name: "lib_auth" })
   .use(bearer())
@@ -24,6 +25,10 @@ export const auth = new Elysia({ name: "lib_auth" })
         const payload = (await loginJwt.verify(
           bearer,
         )) as unknown as JwtPayload;
+
+        if (!isFinite(payload.userId) || payload.userId <= 0) {
+          throw new BusinessError(BusinessErrorCode.Unauthorized);
+        }
         const user = await SystemAccountService.findById(payload.userId);
         if (!user.active) throw new BusinessError(BusinessErrorCode.AccountBan);
         return { user };

@@ -5,7 +5,12 @@ import { optionsUtils } from "../../util";
 
 export const checkbox = {
   render: (props) =>
-    optionsUtils.getLabelStringByValue(props.options, props.value),
+    optionsUtils.getLabelStringByValue(
+      props.options,
+      props.value,
+      props?.valueKey,
+      props?.labelKey,
+    ),
   renderForm: (props) => <Form.Checkbox {...props} />,
 } as SchemaDefined;
 

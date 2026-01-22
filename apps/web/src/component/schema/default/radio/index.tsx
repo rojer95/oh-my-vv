@@ -9,12 +9,21 @@ export const radio = {
     if (props?.tag) {
       return <TagDisplay {...props} />;
     }
-    return optionsUtils.getLabelStringByValue(props?.options, props?.value);
+    return optionsUtils.getLabelStringByValue(
+      props?.options,
+      props?.value,
+      props?.valueKey,
+      props?.labelKey,
+    );
   },
   renderForm: (props) => (
     <Form.RadioGroup
       {...props}
-      options={optionsUtils.transfrom(props.options)}
+      options={optionsUtils.transfrom(
+        props.options,
+        props?.valueKey,
+        props?.labelKey,
+      )}
     />
   ),
 } as SchemaDefined;

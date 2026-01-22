@@ -1,19 +1,22 @@
+import { api, apiProxy } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { useMainRoute } from "@/hook/route.hook";
 import { adminModel } from "@/mobx/admin";
 import { findRoute } from "@/util";
 import { Space, Tag, Toast } from "@douyinfe/semi-ui";
+import { RoleDataPermType, RoleDataPermTypeOptions } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useRef, useState } from "react";
-import { api } from "../../../api/index";
 
 export const RolePage = () => {
   const mainRoute = useMainRoute();
   const tableRef = useRef<SchemaTableInstance>(undefined);
   const [editVisible, setEditVisible] = useState(false);
   const [initValues, setInitValues] = useState<any>({});
-  const { data: options } = useRequest(api.v1.role.options);
+  const { data: options } = useRequest(
+    apiProxy(api.api.v1["system-role"].options.get),
+  );
 
   const isInRoute = (item: any) => {
     return !!findRoute(mainRoute, (i) => {
@@ -24,13 +27,13 @@ export const RolePage = () => {
 
   const onSubmit = async (value: any) => {
     if (initValues?.id) {
-      await api.v1.role.update(initValues.id, value);
+      await apiProxy(api.api.v1["system-role"]({ id: initValues.id }).put)(
+        value,
+      );
       adminModel.loadProfile();
       Toast.success("修改成功");
-    }
-
-    if (!initValues?.id) {
-      await api.v1.role.create(value);
+    } else {
+      await apiProxy(api.api.v1["system-role"].post)(value);
       Toast.success("创建成功");
     }
 
@@ -47,14 +50,38 @@ export const RolePage = () => {
             setInitValues({});
             setEditVisible(false);
           },
-          title: `${initValues?.id ? "编辑" : "创建"}`,
+          title: `${initValues?.id ? "编辑" : "创建"}角色`,
         }}
         initValues={initValues}
         onSubmit={onSubmit}
         columns={[
-          { dataIndex: "roleName", title: "名称", required: true },
+          { dataIndex: "name", title: "名称", required: true },
+          { dataIndex: "sort", title: "排序", type: "number" },
+          { dataIndex: "active", title: "状态", type: "switch" },
           {
-            dataIndex: "rules",
+            dataIndex: "dataPermType",
+            title: "数据权限",
+            type: "select",
+            props: {
+              options: RoleDataPermTypeOptions,
+            },
+          },
+          {
+            dataIndex: "department",
+            title: "自定义部门范围",
+            props: {
+              multiple: true,
+            },
+            deps: ["dataPermType"],
+            required: (values: any) =>
+              [RoleDataPermType.custom].includes(values?.dataPermType),
+            type: (values: any) =>
+              [RoleDataPermType.custom].includes(values?.dataPermType)
+                ? "select"
+                : "hidden",
+          },
+          {
+            dataIndex: "menuPerm",
             title: "权限集",
             required: true,
             type: "tree",
@@ -68,12 +95,14 @@ export const RolePage = () => {
                 itemSize: 28,
                 height: 336,
               },
-              renderLabel: (label, item) => {
+              labelKey: "name",
+              valueKey: "key",
+              renderLabel: (_, item) => {
                 return (
                   <Space>
-                    {String(label).indexOf("/") > 0
-                      ? String(label).split("/")[1]
-                      : label}
+                    {String(item?.name).indexOf("/") > 0
+                      ? String(item?.name).split("/")[1]
+                      : item?.name}
                     {isInRoute(item) ? <Tag color="blue">页面权限</Tag> : null}
                   </Space>
                 );
@@ -85,10 +114,10 @@ export const RolePage = () => {
       <SchemaTable
         title="角色"
         tableRef={tableRef}
-        request={api.v1.role.read}
-        updateAccess="role.update"
-        createAccess="role.create"
-        deleteAccess="role.delete"
+        request={apiProxy(api.api.v1["system-role"].read.post)}
+        updateAccess="system:role:update"
+        createAccess="system:role:create"
+        deleteAccess="system:role:delete"
         onUpdate={(record) => {
           setInitValues(record);
           setEditVisible(true);
@@ -98,13 +127,13 @@ export const RolePage = () => {
           setEditVisible(true);
         }}
         onDelete={async (record) => {
-          await api.v1.role.del(record.id);
+          await api.api.v1["system-role"]({ id: record.id }).delete();
           tableRef.current?.refresh?.();
         }}
         columns={[
           { dataIndex: "id", title: "ID" },
           {
-            dataIndex: "roleName",
+            dataIndex: "name",
             title: "角色名称",
             showInFilter: true,
             operator: "like",
@@ -114,14 +143,20 @@ export const RolePage = () => {
             title: "有效",
             type: "fast-radio",
             props: {
-              permission: "role.update",
+              permission: "system:role:update",
               onSubmit: async (editValue, record) => {
-                await api.v1.role.fastUpdate(record.id, {
-                  active: editValue,
-                });
+                await apiProxy(
+                  api.api.v1["system-role"]({ id: record.id })["fastUpdate"]
+                    .put,
+                )({ active: editValue });
                 tableRef.current?.refresh?.();
               },
             },
+          },
+          {
+            dataIndex: "sort",
+            title: "排序",
+            sorter: true,
           },
           {
             dataIndex: "createdAt",
