@@ -40,6 +40,39 @@ export const PERMISSION_TREE = [
           },
         ],
       },
+      {
+        key: "account",
+        name: "账户管理",
+        type: "menu",
+        children: [
+          {
+            key: "view",
+            name: "查看账户",
+            type: "button",
+            loggable: false,
+          },
+          {
+            key: "create",
+            name: "新增账户",
+            type: "button",
+          },
+          {
+            key: "update",
+            name: "修改账户",
+            type: "button",
+          },
+          {
+            key: "delete",
+            name: "删除账户",
+            type: "button",
+          },
+          {
+            key: "resetPassword",
+            name: "重置密码",
+            type: "button",
+          },
+        ],
+      },
     ],
   },
 ] as const;

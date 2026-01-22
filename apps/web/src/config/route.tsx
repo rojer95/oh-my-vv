@@ -14,6 +14,7 @@ import { DictPage } from "../page/config/dict/dict";
 import { SettingSystemPage } from "../page/config/setting/system";
 import { SettingUploadPage } from "../page/config/setting/upload";
 import { SystemConfigPage } from "../page/config/system-config";
+import { SystemAccountPage } from "../page/system/account";
 import { LoginPage } from "../page/login";
 
 import { MerchantListPage } from "../page/merchant/list";
@@ -129,6 +130,15 @@ const mainRoute: RouteObject[] = [
           access: PERMISSIONS.systemConfigView.key,
         },
         element: <SystemConfigPage />,
+      },
+
+      {
+        path: "account",
+        handle: {
+          menu: "账户管理",
+          access: PERMISSIONS.systemAccountView.key,
+        },
+        element: <SystemAccountPage />,
       },
     ],
   },

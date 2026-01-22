@@ -1,27 +1,24 @@
 import { PERMISSIONS } from "@rojer/mf-common";
 import { Elysia } from "elysia";
-import type { z } from "zod";
+import { findManyOption } from "../../lib/find-many-option";
 import { auth } from "../auth/auth.plugin";
-import { SystemConfigService } from "./system-config.service";
 import {
   SystemConfigCreateZod,
   SystemConfigUpdateZod,
-  SystemConfigQueryZod,
 } from "./system-config.dto";
-import { typeormOption } from "../../lib/typeorm-option";
+import { SystemConfigService } from "./system-config.service";
 
 export const systemConfigController = new Elysia({ name: "systemConfig" })
   .use(auth)
-  .use(typeormOption)
+  .use(findManyOption)
   .group("system-config", (app) =>
     app
       .post(
         "read",
-        async ({ query, findManyOption }) => {
+        async ({ findManyOption }) => {
           return await SystemConfigService.findAndCount(findManyOption);
         },
         {
-          query: SystemConfigQueryZod,
           auth: PERMISSIONS.systemConfigView,
           findManyOption: { tenantId: false },
         },

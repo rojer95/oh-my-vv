@@ -152,11 +152,10 @@ const getPager = (data: any) => {
   return {};
 };
 
-export const typeormOption = new Elysia({ name: "typeorm-option" }).macro({
+export const findManyOption = new Elysia({ name: "find-many-option" }).macro({
   findManyOption: (injectRule?: InjectRule) => ({
     resolve: ({ query, body, request }) => {
-      const data = getData(request.method, body, query);
-
+      const data = getData(request.method, query, body);
       const options: FindManyOptions = {
         where: getWhere(injectRule, data),
         order: getOrder(data),

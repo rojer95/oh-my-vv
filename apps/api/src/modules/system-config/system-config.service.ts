@@ -1,14 +1,9 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
+import { pick } from "lodash-es";
 import { FindManyOptions } from "typeorm";
-import type { z } from "zod";
 import { SystemConfig } from "../../entity/system-config.entity";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
-import {
-  SystemConfigCreateZod,
-  SystemConfigUpdateZod,
-} from "./system-config.dto";
-import { pick } from "lodash-es";
 
 export abstract class SystemConfigService {
   static get repo() {
@@ -35,25 +30,20 @@ export abstract class SystemConfigService {
     return config;
   }
 
-  static async create(dto: z.infer<typeof SystemConfigCreateZod>) {
-    const exist = await this.repo.findOne({ where: { key: dto.key } });
+  static async create(data: Partial<SystemConfig>) {
+    const exist = await this.repo.findOne({ where: { key: data.key } });
 
     if (exist) {
       throw new BusinessError(BusinessErrorCode.SystemConfigKeyAlreadyExists);
     }
 
-    const config = this.repo.create(dto);
+    const config = this.repo.create({ ...data, buildIn: false });
     return await this.repo.save(config);
   }
 
-  static async update(id: number, dto: z.infer<typeof SystemConfigUpdateZod>) {
+  static async update(id: number, data: Partial<SystemConfig>) {
     const config = await this.findById(id);
-
-    if (config.buildIn) {
-      throw new BusinessError(BusinessErrorCode.Forbidden);
-    }
-
-    this.repo.merge(config, pick(dto, ["name", "value", "note"]));
+    this.repo.merge(config, pick(data, ["name", "value", "note"]));
     return await this.repo.save(config);
   }
 

@@ -14,4 +14,6 @@ export const BusinessErrorCode = {
   AccountNotBindMain: [10009, "该账号还未绑定邮箱"],
   SystemConfigKeyAlreadyExists: [10010, "参数键名已存在"],
   SystemConfigBuildInCanNotDelelte: [10010, "系统内置配置不可删除"],
+  SystemAccountNotFound: [10020, "账户不存在"],
+  SystemAccountAlreadyExists: [10021, "账户已存在"],
 } as const;

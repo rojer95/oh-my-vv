@@ -1,4 +1,8 @@
-import { BusinessErrorCode, PERMISSIONS } from "@rojer/mf-common";
+import {
+  BusinessErrorCode,
+  PASSWORD_PATTERN,
+  PERMISSIONS,
+} from "@rojer/mf-common";
 import * as bcrypt from "bcryptjs";
 import { In } from "typeorm";
 import { SystemAccount } from "../../entity/system-account.entity";
@@ -34,12 +38,7 @@ export abstract class AuthService {
   static hashPassword(password: string) {
     const isLocal = process.env.NODE_ENV === "local";
     if (!isLocal) {
-      if (
-        password.length < 8 ||
-        !/^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\W_!@#$%^&*`~()-+=]+$)(?![a-z0-9]+$)(?![a-z\W_!@#$%^&*`~()-+=]+$)(?![0-9\W_!@#$%^&*`~()-+=]+$)[a-zA-Z0-9\W_!@#$%^&*`~()-+=]/.test(
-          password,
-        )
-      ) {
+      if (password.length < 8 || !PASSWORD_PATTERN.test(password)) {
         throw new BusinessError(BusinessErrorCode.PasswordTooSimple);
       }
     }

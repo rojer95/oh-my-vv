@@ -1,14 +1,14 @@
-import { FULL_KEY_PERMISSION_TREE, ProfileType } from "@rojer/mf-common";
+import { ProfileType } from "@rojer/mf-common";
 import { Elysia } from "elysia";
-import { auth } from "./auth.plugin";
-import { AuthService } from "./auth.service";
-import { CaptchaService } from "./captcha.service";
 import {
   ForgetResetPasswordDto,
   ForgetSendCodeDto,
   LoginZod,
   TotpZod,
 } from "./auth.dto";
+import { auth } from "./auth.plugin";
+import { AuthService } from "./auth.service";
+import { CaptchaService } from "./captcha.service";
 
 export const authController = new Elysia()
 

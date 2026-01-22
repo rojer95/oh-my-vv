@@ -5,9 +5,9 @@ import Elysia from "elysia";
 import { JwtPayload } from "../../interface";
 import { BusinessError } from "../../lib/error";
 import { ipPlugin } from "../../lib/ip";
+import { SystemAccountService } from "../system-account/system-account.service";
 import { AuthService } from "./auth.service";
 import { OperationLogService } from "./operation-log.service";
-import { SystemAccountService } from "./system-account.service";
 
 export const auth = new Elysia({ name: "lib_auth" })
   .use(bearer())
@@ -24,12 +24,13 @@ export const auth = new Elysia({ name: "lib_auth" })
         const payload = (await loginJwt.verify(
           bearer,
         )) as unknown as JwtPayload;
-        const user = await SystemAccountService.findOneBy({
-          id: payload.userId,
-          active: true,
-        });
+        const user = await SystemAccountService.findById(payload.userId);
+        if (!user.active) throw new BusinessError(BusinessErrorCode.AccountBan);
         return { user };
-      } catch {}
+      } catch (e) {
+        if (e instanceof BusinessError) throw e;
+        throw new BusinessError(BusinessErrorCode.Unauthorized);
+      }
     }
     return { user: null };
   })
