@@ -1,5 +1,5 @@
 import { Column, Entity } from "typeorm";
-import { BaseEntitySoftDelete } from "./base.entity";
+import { BaseEntitySoftDelete } from "../../lib/base.entity";
 
 @Entity()
 export class SystemTenant extends BaseEntitySoftDelete {

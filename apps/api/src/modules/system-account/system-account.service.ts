@@ -1,6 +1,6 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
-import type { FindManyOptions } from "typeorm";
-import { SystemAccount } from "../../entity/system-account.entity";
+import type { FindManyOptions, FindOptionsWhere } from "typeorm";
+import { SystemAccount } from "./system-account.entity";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
 import { AuthService } from "../auth/auth.service";
@@ -18,8 +18,8 @@ export abstract class SystemAccountService {
     return await this.repo.findAndCount(options);
   }
 
-  static async findById(id: number) {
-    const account = await this.repo.findOne({ where: { id } });
+  static async findOneBy(where: FindOptionsWhere<SystemAccount>) {
+    const account = await this.repo.findOneBy(where);
     if (!account) {
       throw new BusinessError(BusinessErrorCode.SystemAccountNotFound);
     }
@@ -43,22 +43,28 @@ export abstract class SystemAccountService {
     return await this.repo.save(account);
   }
 
-  static async update(id: number, data: Partial<SystemAccount>) {
-    const account = await this.findById(id);
+  static async update(
+    where: FindOptionsWhere<SystemAccount>,
+    data: Partial<SystemAccount>,
+  ) {
+    const account = await this.findOneBy(where);
     this.repo.merge(account, data);
     return await this.repo.save(account);
   }
 
-  static async delete(id: number) {
-    const account = await this.findById(id);
+  static async delete(where: FindOptionsWhere<SystemAccount>) {
+    const account = await this.findOneBy(where);
     account.originAccount = account.account;
     account.account = `del_${account.id}`;
     account.deletedAt = new Date();
     await this.repo.save(account);
   }
 
-  static async resetPassword(id: number, newPassword: string) {
-    const account = await this.findById(id);
+  static async resetPassword(
+    where: FindOptionsWhere<SystemAccount>,
+    newPassword: string,
+  ) {
+    const account = await this.findOneBy(where);
     account.password = AuthService.hashPassword(newPassword);
     return await this.repo.save(account);
   }

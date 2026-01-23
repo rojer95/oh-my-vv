@@ -12,6 +12,7 @@ import { LoginPage } from "../page/login";
 import { DashboardPage } from "../page/statistic/dashboard";
 import { SystemAccountPage } from "../page/system/account";
 import { RolePage } from "../page/system/role";
+import { DepartmentPage } from "../page/system/department";
 
 /**
  * 路由handle附加数据定义
@@ -140,10 +141,18 @@ const mainRoute: RouteObject[] = [
           {
             path: "role",
             handle: {
-              menu: "角色",
+              menu: "角色管理",
               access: PERMISSIONS.systemRoleView.key,
             },
             element: <RolePage />,
+          },
+          {
+            path: "department",
+            handle: {
+              menu: "部门管理",
+              access: PERMISSIONS.systemDepartmentView.key,
+            },
+            element: <DepartmentPage />,
           },
         ],
       },

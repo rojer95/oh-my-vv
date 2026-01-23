@@ -1,13 +1,14 @@
-import { Column, Entity, TreeChildren, TreeParent } from "typeorm";
-import { BaseEntitySoftDeleteWithTenant } from "./base.entity";
+import { Column, Entity, Tree, TreeChildren, TreeParent } from "typeorm";
+import { BaseEntitySoftDeleteWithTenant } from "../../lib/base.entity";
 
 @Entity()
+@Tree("materialized-path")
 export class SystemDepartment extends BaseEntitySoftDeleteWithTenant {
   @Column()
   name: string;
 
-  @Column()
-  parentId: number;
+  @Column({ nullable: true })
+  parentId: number | null;
 
   @Column()
   sort: number;

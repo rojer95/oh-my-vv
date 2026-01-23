@@ -85,6 +85,7 @@ const getWhere = (
     tenantId: "tenantId",
   },
   data: any,
+  tenantId: number,
 ): Record<string, any> => {
   const where: any = {};
 
@@ -99,7 +100,7 @@ const getWhere = (
 
   if (injectRule?.tenantId) {
     where[injectRule.tenantId === true ? "tenantId" : injectRule.tenantId] =
-      data.tenantId;
+      tenantId;
   }
 
   return where;
@@ -152,19 +153,29 @@ const getPager = (data: any) => {
   return {};
 };
 
-export const findManyOption = new Elysia({ name: "find-many-option" }).macro({
-  findManyOption: (injectRule?: InjectRule) => ({
-    resolve: ({ query, body, request }) => {
+export const curdPlugin = new Elysia({ name: "lib_curd" })
+  .resolve({ as: "scoped" }, ({ body }) => ({
+    tenantId: 0, // 系统预留
+    bodyWithTenantId: {
+      ...(body || {}),
+      tenantId: 0,
+    },
+  }))
+  .macro("findManyOption", (injectRule?: InjectRule | true) => ({
+    resolve: ({ query, body, request, tenantId }) => {
+      if (injectRule === true) {
+        injectRule = {
+          tenantId: "tenantId",
+        };
+      }
       const data = getData(request.method, query, body);
       const options: FindManyOptions = {
-        where: getWhere(injectRule, data),
+        where: getWhere(injectRule, data, tenantId!),
         order: getOrder(data),
         ...getPager(data),
       };
-
       return {
         findManyOption: options,
       };
     },
-  }),
-});
+  }));

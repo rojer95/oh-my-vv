@@ -1,5 +1,5 @@
 import { isPlainObject } from "lodash-es";
-import { SystemOperationLog } from "../../entity/system-operation-log.entity";
+import { SystemOperationLog } from "./system-operation-log.entity";
 import { logger } from "../../lib/logger";
 import { AppDataSource } from "../../lib/typeorm";
 

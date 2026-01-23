@@ -64,13 +64,13 @@ export const RemotePicker = ({
     },
     {
       refreshDeps: [ids],
-    }
+    },
   );
 
   const onOpen = async () => {
     if (!ref.current?.open) return;
     const { success, data } = await ref.current?.open(
-      selected?.map((i) => i[rowKey])
+      selected?.map((i) => i[rowKey]),
     );
 
     const _ids = uniq(data);

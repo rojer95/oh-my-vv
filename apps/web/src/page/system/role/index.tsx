@@ -1,4 +1,4 @@
-import { api, apiProxy } from "@/api";
+import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { useMainRoute } from "@/hook/route.hook";
@@ -14,8 +14,8 @@ export const RolePage = () => {
   const tableRef = useRef<SchemaTableInstance>(undefined);
   const [editVisible, setEditVisible] = useState(false);
   const [initValues, setInitValues] = useState<any>({});
-  const { data: options } = useRequest(
-    apiProxy(api.api.v1["system-role"].options.get),
+  const { data: options } = useRequest<{ permissions: any[] }, []>(
+    api.api.v1["system-role"].options.get,
   );
 
   const isInRoute = (item: any) => {
@@ -27,13 +27,11 @@ export const RolePage = () => {
 
   const onSubmit = async (value: any) => {
     if (initValues?.id) {
-      await apiProxy(api.api.v1["system-role"]({ id: initValues.id }).put)(
-        value,
-      );
+      await api.api.v1["system-role"]({ id: initValues.id }).put(value);
       adminModel.loadProfile();
       Toast.success("修改成功");
     } else {
-      await apiProxy(api.api.v1["system-role"].post)(value);
+      await api.api.v1["system-role"].post(value);
       Toast.success("创建成功");
     }
 
@@ -114,7 +112,7 @@ export const RolePage = () => {
       <SchemaTable
         title="角色"
         tableRef={tableRef}
-        request={apiProxy(api.api.v1["system-role"].read.post)}
+        request={api.api.v1["system-role"].read.post}
         updateAccess="system:role:update"
         createAccess="system:role:create"
         deleteAccess="system:role:delete"
@@ -145,10 +143,9 @@ export const RolePage = () => {
             props: {
               permission: "system:role:update",
               onSubmit: async (editValue, record) => {
-                await apiProxy(
-                  api.api.v1["system-role"]({ id: record.id })["fastUpdate"]
-                    .put,
-                )({ active: editValue });
+                await api.api.v1["system-role"]({ id: record.id })[
+                  "fastUpdate"
+                ].put({ active: editValue });
                 tableRef.current?.refresh?.();
               },
             },

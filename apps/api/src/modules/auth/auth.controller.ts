@@ -1,18 +1,18 @@
 import { ProfileType } from "@rojer/mf-common";
 import { Elysia } from "elysia";
+import { authPlugin } from "../../lib/auth";
+import { CaptchaService } from "../helper/captcha.service";
 import {
   ForgetResetPasswordDto,
   ForgetSendCodeDto,
   LoginZod,
   TotpZod,
 } from "./auth.dto";
-import { auth } from "./auth.plugin";
 import { AuthService } from "./auth.service";
-import { CaptchaService } from "./captcha.service";
 
 export const authController = new Elysia()
 
-  .use(auth)
+  .use(authPlugin)
 
   .group("auth", (app) =>
     app

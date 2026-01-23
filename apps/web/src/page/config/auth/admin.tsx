@@ -1,3 +1,4 @@
+import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { SchemaColumn } from "@/component/schema/typing";
@@ -6,14 +7,15 @@ import { Toast } from "@douyinfe/semi-ui";
 import { useRequest } from "ahooks";
 import { pick } from "lodash-es";
 import { useMemo, useRef, useState } from "react";
-import { api } from "../../../api/index";
 
 export const AdminPage = () => {
-  const tableRef = useRef<SchemaTableInstance>();
+  const tableRef = useRef<SchemaTableInstance>(undefined);
   const [editVisible, setEditVisible] = useState(false);
   const [mode, setMode] = useState<"create" | "update" | "reset">("create");
   const [initValues, setInitValues] = useState<any>({});
-  const { data: options } = useRequest(api.v1.admin.options);
+  const { data: options } = useRequest<{ role: any[] }, []>(
+    api.v1.admin.options,
+  );
   const columns = useMemo<SchemaColumn[]>(() => {
     if (mode === "create") {
       return [

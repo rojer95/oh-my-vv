@@ -2,15 +2,15 @@ import { bearer } from "@elysiajs/bearer";
 import { jwt } from "@elysiajs/jwt";
 import { BusinessErrorCode, PermissionTreeNode } from "@rojer/mf-common";
 import Elysia from "elysia";
-import { JwtPayload } from "../../interface";
-import { BusinessError } from "../../lib/error";
-import { ipPlugin } from "../../lib/ip";
-import { SystemAccountService } from "../system-account/system-account.service";
-import { AuthService } from "./auth.service";
-import { OperationLogService } from "./operation-log.service";
+import { JwtPayload } from "../interface";
+import { BusinessError } from "./error";
+import { ipPlugin } from "./ip";
+import { SystemAccountService } from "../modules/system-account/system-account.service";
+import { AuthService } from "../modules/auth/auth.service";
+import { OperationLogService } from "../modules/operation-log/operation-log.service";
 import { isFinite } from "lodash-es";
 
-export const auth = new Elysia({ name: "lib_auth" })
+export const authPlugin = new Elysia({ name: "lib_auth" })
   .use(bearer())
   .use(
     jwt({
@@ -29,7 +29,10 @@ export const auth = new Elysia({ name: "lib_auth" })
         if (!isFinite(payload.userId) || payload.userId <= 0) {
           throw new BusinessError(BusinessErrorCode.Unauthorized);
         }
-        const user = await SystemAccountService.findById(payload.userId);
+
+        const user = await SystemAccountService.findOneBy({
+          id: payload.userId,
+        });
         if (!user.active) throw new BusinessError(BusinessErrorCode.AccountBan);
         return { user };
       } catch (e) {

@@ -1,7 +1,7 @@
 import { PERMISSIONS } from "@rojer/mf-common";
 import { Elysia } from "elysia";
-import { findManyOption } from "../../lib/find-many-option";
-import { auth } from "../auth/auth.plugin";
+import { authPlugin } from "../../lib/auth";
+import { curdPlugin } from "../../lib/curd";
 import {
   SystemConfigCreateZod,
   SystemConfigUpdateZod,
@@ -9,8 +9,8 @@ import {
 import { SystemConfigService } from "./system-config.service";
 
 export const systemConfigController = new Elysia({ name: "systemConfig" })
-  .use(auth)
-  .use(findManyOption)
+  .use(curdPlugin)
+  .use(authPlugin)
   .group("system-config", (app) =>
     app
       .post(

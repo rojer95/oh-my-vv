@@ -5,15 +5,15 @@ import {
 } from "@rojer/mf-common";
 import * as bcrypt from "bcryptjs";
 import { In } from "typeorm";
-import { SystemAccount } from "../../entity/system-account.entity";
-import { SystemRole } from "../../entity/system-role.entity";
+import { SystemAccount } from "../system-account/system-account.entity";
+import { SystemRole } from "../system-role/system-role.entity";
 import { BusinessError } from "../../lib/error";
 import { logger } from "../../lib/logger";
 import { redis } from "../../lib/redis";
 import { AppDataSource } from "../../lib/typeorm";
 import { mailQueue } from "../../queue/mail.queue";
-import { CaptchaService } from "./captcha.service";
-import { TotpService } from "./totp.service";
+import { CaptchaService } from "../helper/captcha.service";
+import { TotpService } from "../helper/totp.service";
 
 export abstract class AuthService {
   static salt = 10;

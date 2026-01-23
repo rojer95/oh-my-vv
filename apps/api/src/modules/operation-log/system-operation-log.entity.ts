@@ -1,5 +1,5 @@
 import { Column, Entity } from "typeorm";
-import { BaseEntityWithTenant } from "./base.entity";
+import { BaseEntityWithTenant } from "../../lib/base.entity";
 
 @Entity("system_operation_log")
 export class SystemOperationLog extends BaseEntityWithTenant {

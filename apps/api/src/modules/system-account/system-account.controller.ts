@@ -1,26 +1,29 @@
 import { PERMISSIONS } from "@rojer/mf-common";
 import Elysia from "elysia";
-import { findManyOption } from "../../lib/find-many-option";
-import { auth } from "../auth/auth.plugin";
+import z from "zod";
+import { authPlugin } from "../../lib/auth";
+import { curdPlugin } from "../../lib/curd";
+import { zStringId } from "../../lib/custom-zod";
+import { SystemRoleService } from "../system-role/system-role.service";
 import {
   SystemAccountCreateZod,
   SystemAccountResetPasswordZod,
   SystemAccountUpdateZod,
 } from "./system-account.dto";
 import { SystemAccountService } from "./system-account.service";
-import { SystemRoleService } from "../system-role/system-role.service";
 
 export const systemAccountController = new Elysia({ name: "systemAccount" })
-  .use(auth)
-  .use(findManyOption)
+  .use(curdPlugin)
+  .use(authPlugin)
   .group("system-account", (app) =>
     app
       .get(
         "options",
-        async () => {
+        async ({ tenantId }) => {
           const roles = await SystemRoleService.find({
             where: {
               active: true,
+              tenantId,
             },
             select: ["id", "name"],
           });
@@ -38,58 +41,64 @@ export const systemAccountController = new Elysia({ name: "systemAccount" })
         },
         {
           auth: PERMISSIONS.systemAccountView,
-          findManyOption: { tenantId: true },
+          findManyOption: true,
         },
       )
       .post(
         "",
-        async ({ body }) => {
-          return await SystemAccountService.create(body);
+        async ({ bodyWithTenantId }) => {
+          return await SystemAccountService.create(bodyWithTenantId);
         },
         {
           body: SystemAccountCreateZod,
           auth: PERMISSIONS.systemAccountCreate,
         },
       )
-      .get(
-        "/:id",
-        async ({ params }) => {
-          return await SystemAccountService.findById(Number(params.id));
-        },
-        {
-          auth: PERMISSIONS.systemAccountView,
-        },
-      )
       .put(
         "/:id",
-        async ({ params, body }) => {
-          return await SystemAccountService.update(Number(params.id), body);
+        async ({ params, body, tenantId }) => {
+          return await SystemAccountService.update(
+            {
+              id: params.id,
+              tenantId,
+            },
+            body,
+          );
         },
         {
           body: SystemAccountUpdateZod,
           auth: PERMISSIONS.systemAccountUpdate,
+          params: z.object({ id: zStringId }),
         },
       )
       .delete(
         "/:id",
-        async ({ params }) => {
-          await SystemAccountService.delete(Number(params.id));
+        async ({ params, tenantId }) => {
+          await SystemAccountService.delete({
+            id: params.id,
+            tenantId,
+          });
         },
         {
           auth: PERMISSIONS.systemAccountDelete,
+          params: z.object({ id: zStringId }),
         },
       )
       .put(
         "/:id/reset-password",
-        async ({ params, body }) => {
+        async ({ params, body, tenantId }) => {
           await SystemAccountService.resetPassword(
-            Number(params.id),
+            {
+              id: params.id,
+              tenantId,
+            },
             body.newPassword,
           );
         },
         {
           body: SystemAccountResetPasswordZod,
           auth: PERMISSIONS.systemAccountResetPassword,
+          params: z.object({ id: zStringId }),
         },
       ),
   );

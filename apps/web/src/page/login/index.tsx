@@ -20,7 +20,7 @@ import { STORAGE_AUTH_KEY } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useNavigate } from "react-router-dom";
 import { LoginPageStyled } from "./style";
-import { api, apiProxy } from "@/api";
+import { api } from "@/api";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export const LoginPage = () => {
   const {
     data: { status: needCaptcha } = { status: false },
     runAsync: checkCaptchaStatus,
-  } = useRequest(apiProxy(api.api.v1.auth.captcha.get), {
+  } = useRequest<{ status: boolean }, []>(api.api.v1.auth.captcha.get, {
     onSuccess: ({ status }) => {
       if (status) {
         refreshCaptcha();
@@ -45,7 +45,7 @@ export const LoginPage = () => {
     data: captcha,
     refresh: refreshCaptcha,
     loading: captchaLoading,
-  } = useRequest<any, []>(apiProxy(api.api.v1.auth.captcha.post), {
+  } = useRequest<any, []>(api.api.v1.auth.captcha.post, {
     manual: true,
     onBefore: () => {
       formApi.current?.setValue("code", "");
@@ -55,7 +55,7 @@ export const LoginPage = () => {
   const [remember, setRemember] = useState(true);
 
   const { runAsync: loginRun, loading: loginLoading } = useRequest(
-    apiProxy(api.api.v1.auth.login.post),
+    api.api.v1.auth.login.post,
     {
       manual: true,
       onSuccess: (response: any) => {
@@ -78,7 +78,7 @@ export const LoginPage = () => {
   );
 
   const { runAsync: forgetResetPassword, loading: resetLoading } = useRequest(
-    apiProxy(api.api.v1.auth.forget.password.post),
+    api.api.v1.auth.forget.password.post,
     {
       manual: true,
       onSuccess: () => {
@@ -93,7 +93,7 @@ export const LoginPage = () => {
   const isCodeSend = useRef<boolean>(false);
 
   const { loading: mailLoading, runAsync: forgetSendCode } = useRequest(
-    apiProxy(api.api.v1.auth.forget.code.post),
+    api.api.v1.auth.forget.code.post,
     {
       manual: true,
       onSuccess: () => {
@@ -113,14 +113,9 @@ export const LoginPage = () => {
     });
 
   const onLogin = async (value: any) => {
-    const {
-      data: { status },
-      error,
-    } = await api.api.v1.auth.totp.get({
+    const { status } = await api.api.v1.auth.totp.get({
       query: { account: value.account },
     });
-
-    if (error) throw error;
 
     if (status) {
       const totpToken = await waitTotpToken();

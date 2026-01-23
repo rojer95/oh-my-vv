@@ -1,7 +1,7 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
 import { pick } from "lodash-es";
-import { FindManyOptions } from "typeorm";
-import { SystemConfig } from "../../entity/system-config.entity";
+import { FindManyOptions, FindOptionsWhere } from "typeorm";
+import { SystemConfig } from "./system-config.entity";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
 
@@ -14,8 +14,8 @@ export abstract class SystemConfigService {
     return await this.repo.findAndCount(options);
   }
 
-  static async findById(id: number) {
-    const config = await this.repo.findOne({ where: { id } });
+  static async findOneBy(where: FindOptionsWhere<SystemConfig>) {
+    const config = await this.repo.findOneBy(where);
     if (!config) {
       throw new BusinessError(BusinessErrorCode.NotFound);
     }
@@ -42,13 +42,13 @@ export abstract class SystemConfigService {
   }
 
   static async update(id: number, data: Partial<SystemConfig>) {
-    const config = await this.findById(id);
+    const config = await this.findOneBy({ id });
     this.repo.merge(config, pick(data, ["name", "value", "note"]));
     return await this.repo.save(config);
   }
 
   static async delete(id: number) {
-    const config = await this.findById(id);
+    const config = await this.findOneBy({ id });
 
     if (config.buildIn) {
       throw new BusinessError(

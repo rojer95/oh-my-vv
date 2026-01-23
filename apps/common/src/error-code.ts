@@ -18,4 +18,8 @@ export const BusinessErrorCode = {
   SystemAccountAlreadyExists: [10021, "账户已存在"],
   SystemRoleNotFound: [10030, "角色不存在"],
   SystemRoleAlreadyExists: [10031, "角色已存在"],
+  SystemDepartmentNotFound: [10040, "部门不存在"],
+  SystemDepartmentRootCannotDelete: [10041, "总部不能被删除"],
+  SystemDepartmentHasChildren: [10042, "部门下有子部门，无法删除"],
+  SystemDepartmentRequiredParentId: [10043, "请设置上级部门"],
 } as const;

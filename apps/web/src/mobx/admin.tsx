@@ -38,9 +38,7 @@ class AdminModel {
   *loadProfile() {
     try {
       this.loading = true;
-      const { data, error } = yield api.api.v1.auth.profile.get();
-      if (error) throw error.value;
-      this.profile = data;
+      this.profile = yield api.api.v1.auth.profile.get();
       this.logined = true;
     } catch (error) {
       this.logined = false;

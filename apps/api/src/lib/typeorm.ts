@@ -4,13 +4,13 @@ import type { Logger } from "typeorm";
 import { DataSource, FileLogger } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategy";
 import { Logger as WinstonLogger } from "winston";
-import { SystemAccount } from "../entity/system-account.entity";
-import { SystemDepartment } from "../entity/system-department.entity";
-import { SystemOperationLog } from "../entity/system-operation-log.entity";
-import { SystemRole } from "../entity/system-role.entity";
-import { SystemTenant } from "../entity/system-tenant.entity";
+import { SystemAccount } from "../modules/system-account/system-account.entity";
+import { SystemDepartment } from "../modules/system-department/system-department.entity";
+import { SystemOperationLog } from "../modules/operation-log/system-operation-log.entity";
+import { SystemRole } from "../modules/system-role/system-role.entity";
+import { SystemTenant } from "../modules/system-tenant/system-tenant.entity";
 import { logger } from "./logger";
-import { SystemConfig } from "../entity/system-config.entity";
+import { SystemConfig } from "../modules/system-config/system-config.entity";
 
 export class TypeORMLogger extends FileLogger implements Logger {
   constructor(readonly typeormLogger: WinstonLogger) {

@@ -1,7 +1,7 @@
-import { api, apiProxy } from "@/api";
+import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
-import { Tag, Toast } from "@douyinfe/semi-ui";
+import { Toast } from "@douyinfe/semi-ui";
 import { PASSWORD_PATTERN } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useRef, useState } from "react";
@@ -12,20 +12,18 @@ export const SystemAccountPage = () => {
   const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
   const [initValues, setInitValues] = useState<any>({});
   const [targetAccount, setTargetAccount] = useState<any>(null);
-  const { data: options } = useRequest(
-    apiProxy(api.api.v1["system-account"].options.get),
+  const { data: options } = useRequest<{ roles: any[] }, []>(
+    api.api.v1["system-account"].options.get,
   );
 
   const onSubmit = async (value: any) => {
     if (initValues?.id) {
-      await apiProxy(
-        api.api.v1["system-account"]({
-          id: initValues.id,
-        }).put,
-      )(value);
+      await api.api.v1["system-account"]({
+        id: initValues.id,
+      }).put(value);
       Toast.success("修改成功");
     } else {
-      await apiProxy(api.api.v1["system-account"].post)(value);
+      await api.api.v1["system-account"].post(value);
       Toast.success("创建成功");
     }
     tableRef.current?.refresh?.();
@@ -33,11 +31,9 @@ export const SystemAccountPage = () => {
   };
 
   const onResetPassword = async (value: any) => {
-    await apiProxy(
-      api.api.v1["system-account"]({
-        id: targetAccount.id,
-      })["reset-password"].put,
-    )(value);
+    await api.api.v1["system-account"]({
+      id: targetAccount.id,
+    })["reset-password"].put(value);
     Toast.success("密码已重置");
     setResetPasswordVisible(false);
   };
@@ -166,7 +162,7 @@ export const SystemAccountPage = () => {
       <SchemaTable
         title="系统账户"
         tableRef={tableRef}
-        request={apiProxy(api.api.v1["system-account"].read.post)}
+        request={api.api.v1["system-account"].read.post}
         createAccess="system:account:create"
         updateAccess="system:account:update"
         deleteAccess="system:account:delete"

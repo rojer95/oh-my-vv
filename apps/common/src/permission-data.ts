@@ -101,6 +101,34 @@ export const PERMISSION_TREE = [
           },
         ],
       },
+      {
+        key: "department",
+        name: "部门管理",
+        type: "menu",
+        children: [
+          {
+            key: "view",
+            name: "查看部门",
+            type: "button",
+            loggable: false,
+          },
+          {
+            key: "create",
+            name: "新增部门",
+            type: "button",
+          },
+          {
+            key: "update",
+            name: "修改部门",
+            type: "button",
+          },
+          {
+            key: "delete",
+            name: "删除部门",
+            type: "button",
+          },
+        ],
+      },
     ],
   },
 ] as const;

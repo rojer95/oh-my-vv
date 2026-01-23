@@ -1,8 +1,8 @@
+import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { Toast } from "@douyinfe/semi-ui";
 import { useRef, useState } from "react";
-import { api, apiProxy } from "../../../api";
 
 export const SystemConfigPage = () => {
   const tableRef = useRef<SchemaTableInstance>(undefined);
@@ -11,14 +11,12 @@ export const SystemConfigPage = () => {
 
   const onSubmit = async (value: any) => {
     if (initValues?.id) {
-      await apiProxy(
-        api.api.v1["system-config"]({
-          id: initValues.id,
-        }).put,
-      )(value);
+      await api.api.v1["system-config"]({
+        id: initValues.id,
+      }).put(value);
       Toast.success("修改成功");
     } else {
-      await apiProxy(api.api.v1["system-config"].post)(value);
+      await api.api.v1["system-config"].post(value);
       Toast.success("创建成功");
     }
 
@@ -87,7 +85,7 @@ export const SystemConfigPage = () => {
       <SchemaTable
         title="系统配置"
         tableRef={tableRef}
-        request={apiProxy(api.api.v1["system-config"].read.post)}
+        request={api.api.v1["system-config"].read.post}
         updateAccess="system:config:update"
         createAccess="system:config:create"
         deleteAccess="system:config:delete"

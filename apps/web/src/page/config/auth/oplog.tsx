@@ -1,9 +1,11 @@
+import { api } from "@/api";
 import { SchemaTable } from "@/component/schema/table";
 import { useRequest } from "ahooks";
-import { api } from "../../../api/index";
 
 export const OplogPage = () => {
-  const { data: options } = useRequest(api.v1.role.options);
+  const { data: options } = useRequest<{ permission: any[] }, []>(
+    api.v1.role.options,
+  );
 
   return (
     <>

@@ -1,10 +1,12 @@
 import { Elysia } from "elysia";
-import { auth } from "../auth/auth.plugin";
+import { authPlugin } from "../../lib/auth";
 
-export const noticeController = new Elysia().use(auth).group("notice", (app) =>
-  app
-    .get("/", () => {
-      return [];
-    })
-    .post("/readed", () => {}, { auth: true }),
-);
+export const noticeController = new Elysia()
+  .use(authPlugin)
+  .group("notice", (app) =>
+    app
+      .get("/", () => {
+        return [];
+      })
+      .post("/readed", () => {}, { auth: true }),
+  );
