@@ -1,9 +1,19 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
 import { isFinite, pick } from "lodash-es";
-import type { FindOptionsWhere } from "typeorm";
+import {
+  EntityTarget,
+  IsNull,
+  ObjectLiteral,
+  TreeRepositoryNotSupportedError,
+  type FindOptionsWhere,
+} from "typeorm";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm";
+import { AppDataSource } from "../../lib/typeorm/typeorm";
 import { SystemDepartment } from "./system-department.entity";
+import {
+  SortableTreeRepository,
+  sortableTreeRepositoryMethods,
+} from "../../lib/typeorm/sortable-tree.repository";
 
 export abstract class SystemDepartmentService {
   static get repo() {
@@ -11,8 +21,34 @@ export abstract class SystemDepartmentService {
   }
 
   static async findTrees(tenantId: number) {
-    // TODO: 根据tenantId返回部门树，按排序sort desc 排序
-    return await this.repo.findTrees();
+    return await AppDataSource.transaction(async (t) => {
+      const repo: SortableTreeRepository<SystemDepartment> = t
+        .getTreeRepository(SystemDepartment)
+        .extend(sortableTreeRepositoryMethods);
+
+      let root = await repo.findOneBy({
+        tenantId,
+        parentId: IsNull(),
+      });
+
+      if (!root) {
+        root = repo.create({
+          tenantId,
+          name: "总部",
+        });
+
+        await repo.save(root);
+      }
+
+      const rootTree = await repo.findDescendantsTree(root, {
+        where: {
+          tenantId,
+        },
+        order: { sort: "DESC", id: "ASC" },
+      });
+
+      return [rootTree];
+    });
   }
 
   static async findOneBy(where: FindOptionsWhere<SystemDepartment>) {
@@ -52,8 +88,13 @@ export abstract class SystemDepartmentService {
       );
     }
 
-    if (data.parentId && isFinite(data.parentId)) {
+    // 如果修改了父级
+    if (data.parentId && department.parentId !== data.parentId) {
       const parent = await this.findOneBy({ id: data.parentId });
+      // 不能将自身及下级设置为上级部门
+      if (parent.path.startsWith(department.path)) {
+        throw new BusinessError(BusinessErrorCode.SystemDepartmentBadParentId);
+      }
       department.parent = parent;
     }
 

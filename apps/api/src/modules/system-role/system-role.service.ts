@@ -1,7 +1,7 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
 import type { FindManyOptions, FindOptionsWhere } from "typeorm";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm";
+import { AppDataSource } from "../../lib/typeorm/typeorm";
 import { SystemRole } from "./system-role.entity";
 
 export abstract class SystemRoleService {

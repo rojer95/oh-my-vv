@@ -21,4 +21,11 @@ export class SystemDepartment extends BaseEntitySoftDeleteWithTenant {
 
   @TreeParent()
   parent: SystemDepartment;
+
+  @Column({
+    name: "mpath",
+    nullable: true,
+    select: true,
+  })
+  path: string;
 }

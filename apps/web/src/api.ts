@@ -15,33 +15,34 @@ export const treatyApi = treaty<App>(import.meta.env.VITE_API as string, {
       };
     }
   },
-  onResponse: async (response) => {
-    const data = await response.json();
-    if (data.code === 0) return data.data;
-    Toast.error(data.message);
-    throw new Error(data.message);
-  },
 });
 
 const createProxy = (target: any): any => {
   return new Proxy(target, {
     get(innerTarget: any, prop: string | symbol) {
       const value = Reflect.get(innerTarget, prop);
-
       if (
         ["get", "post", "put", "delete"].includes(
           prop.toString().toLocaleLowerCase(),
         )
       ) {
         return async (...args: any) => {
-          const { data, error } = await value(...args);
-          if (error) {
-            throw error.value;
+          const res = await value(...args);
+          const { data, error } = res;
+          if (data.code !== 0 || error) {
+            Toast.error(data?.message || error?.message);
+            throw new Error(data.message || error?.message);
           }
-          return data;
+          return data.data;
         };
       }
+
       return createProxy(value);
+    },
+    // 处理函数调用（当代理对象本身被调用时）
+    apply(target: any, thisArg: any, args: any[]) {
+      const result = Reflect.apply(target, thisArg, args);
+      return createProxy(result);
     },
   });
 };

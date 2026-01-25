@@ -66,6 +66,7 @@ export const LoginPage = () => {
         } else {
           sessionStorage[STORAGE_AUTH_KEY] = response.token;
         }
+        Toast.success("登录成功！");
         adminModel.loadProfile();
         setError("");
         navigate(`/dashboard`);

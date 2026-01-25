@@ -22,4 +22,5 @@ export const BusinessErrorCode = {
   SystemDepartmentRootCannotDelete: [10041, "总部不能被删除"],
   SystemDepartmentHasChildren: [10042, "部门下有子部门，无法删除"],
   SystemDepartmentRequiredParentId: [10043, "请设置上级部门"],
+  SystemDepartmentBadParentId: [10044, "不能将自身及下级设置为上级部门"],
 } as const;

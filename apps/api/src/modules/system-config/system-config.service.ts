@@ -3,7 +3,7 @@ import { pick } from "lodash-es";
 import { FindManyOptions, FindOptionsWhere } from "typeorm";
 import { SystemConfig } from "./system-config.entity";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm";
+import { AppDataSource } from "../../lib/typeorm/typeorm";
 
 export abstract class SystemConfigService {
   static get repo() {

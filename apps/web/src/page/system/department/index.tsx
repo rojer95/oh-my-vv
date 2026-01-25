@@ -7,14 +7,17 @@ import { PERMISSIONS } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const transformTreeData = (data: any[]): any[] => {
+const transformTreeData = (data: any[], disabledPath: string): any[] => {
   if (!data || !Array.isArray(data)) return [];
 
   return data.map((item) => ({
     key: item.id,
     label: item.name,
     value: item.id,
-    children: item.children ? transformTreeData(item.children) : undefined,
+    disabled: String(item.path).startsWith(disabledPath),
+    children: item.children
+      ? transformTreeData(item.children, disabledPath)
+      : undefined,
   }));
 };
 
@@ -47,8 +50,8 @@ export const DepartmentPage = () => {
   );
 
   const treeSelectData = useMemo(() => {
-    return transformTreeData(treeData || []);
-  }, [treeData]);
+    return transformTreeData(treeData || [], initValues?.path);
+  }, [treeData, initValues?.id]);
 
   const allExpandedKeys = useMemo(() => {
     return getAllNodeIds(treeData || []);
@@ -60,14 +63,17 @@ export const DepartmentPage = () => {
 
   const onOpenEditModal = (value: any) => {
     setInitValues(value);
-    console.log(getAllNodeIds(treeData || []));
     setFormExpandedRowKeys(getAllNodeIds(treeData || []));
     setEditVisible(true);
   };
 
   const onSubmit = async (value: any) => {
     if (initValues?.id) {
-      await api.api.v1["system-department"]({ id: initValues.id }).put(value);
+      const res = await api.api.v1["system-department"]({
+        id: initValues.id,
+      }).put(value);
+      console.log("res", res);
+
       Toast.success("修改成功");
     } else {
       await api.api.v1["system-department"].post(value);

@@ -2,7 +2,7 @@ import { BusinessErrorCode } from "@rojer/mf-common";
 import type { FindManyOptions, FindOptionsWhere } from "typeorm";
 import { SystemAccount } from "./system-account.entity";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm";
+import { AppDataSource } from "../../lib/typeorm/typeorm";
 import { AuthService } from "../auth/auth.service";
 
 export abstract class SystemAccountService {

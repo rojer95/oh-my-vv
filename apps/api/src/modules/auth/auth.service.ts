@@ -10,7 +10,7 @@ import { SystemRole } from "../system-role/system-role.entity";
 import { BusinessError } from "../../lib/error";
 import { logger } from "../../lib/logger";
 import { redis } from "../../lib/redis";
-import { AppDataSource } from "../../lib/typeorm";
+import { AppDataSource } from "../../lib/typeorm/typeorm";
 import { mailQueue } from "../../queue/mail.queue";
 import { CaptchaService } from "../helper/captcha.service";
 import { TotpService } from "../helper/totp.service";
