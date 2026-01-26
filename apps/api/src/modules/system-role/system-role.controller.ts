@@ -4,6 +4,7 @@ import z from "zod";
 import { authPlugin } from "../../lib/auth";
 import { curdPlugin } from "../../lib/curd";
 import { zStringId } from "../../lib/custom-zod";
+import { SystemDepartmentService } from "../system-department/system-department.service";
 import {
   SystemRoleCreateZod,
   SystemRoleFastUpdateZod,
@@ -18,8 +19,10 @@ export const systemRoleController = new Elysia({ name: "systemRole" })
     app
       .get(
         "options",
-        async () => {
-          return { permissions: FULL_KEY_PERMISSION_TREE };
+        async ({ tenantId }) => {
+          const departments =
+            await SystemDepartmentService.findTreeByTenantId(tenantId);
+          return { permissions: FULL_KEY_PERMISSION_TREE, departments };
         },
         {
           auth: PERMISSIONS.systemRoleView,

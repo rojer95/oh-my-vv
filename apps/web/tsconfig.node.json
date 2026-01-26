@@ -21,7 +21,20 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/asset/*": ["./src/asset/*"],
+      "@/component/*": ["./src/component/*"],
+      "@/exception/*": ["./src/exception/*"],
+      "@/hook/*": ["./src/hook/*"],
+      "@/mobx/*": ["./src/mobx/*"],
+      "@/schema/*": ["./src/schema/*"],
+      "@/util": ["./src/util/index.ts"],
+      "@/dayjs": ["./src/dayjs.ts"],
+      "@/api": ["./src/api.ts"],
+      "@/global.css": ["./src/@/global.css"]
+    }
   },
   "include": ["vite.config.ts"]
 }

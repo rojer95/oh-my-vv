@@ -1,18 +1,9 @@
-export { checkAccess } from "./access";
-export { getDisabledProps } from "./date";
-export { getFileExt } from "./ext";
-export { Fonts, createFontFace2HTMLByTTF } from "./font";
-export { toNumber } from "./number";
-export {
-  filterMenuByProfile,
-  findRoute,
-  getMenuFromRoute,
-  getPathname,
-} from "./route";
-export { speak } from "./speak";
-export {
-  customRequestBase64,
-  uploadFile,
-  md5File,
-  customRequest,
-} from "./upload";
+export * from "./access";
+export * from "./date";
+export * from "./ext";
+export * from "./font";
+export * from "./number";
+export * from "./route";
+export * from "./speak";
+export * from "./upload";
+export * from "./select-tree";

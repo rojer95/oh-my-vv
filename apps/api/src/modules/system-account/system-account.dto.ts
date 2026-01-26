@@ -12,7 +12,7 @@ export const SystemAccountCreateZod = z.object({
     .regex(/^1[3-9]\d{9}$/)
     .optional()
     .or(z.literal("")),
-  mail: z.string().email().optional().or(z.literal("")),
+  mail: z.email().optional().or(z.literal("")),
   departmentId: z.number().optional(), // 预留，部门还未实现
 });
 
@@ -23,6 +23,7 @@ export const SystemAccountUpdateZod = SystemAccountCreateZod.pick({
   active: true,
   phone: true,
   mail: true,
+  departmentId: true,
 });
 
 export const SystemAccountResetPasswordZod = z.object({

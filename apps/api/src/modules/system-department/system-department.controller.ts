@@ -21,7 +21,7 @@ export const systemDepartmentController = new Elysia({
       .get(
         "tree",
         async ({ tenantId }) => {
-          return await SystemDepartmentService.findTrees(tenantId);
+          return await SystemDepartmentService.findTreeByTenantId(tenantId);
         },
         {
           auth: PERMISSIONS.systemDepartmentView,

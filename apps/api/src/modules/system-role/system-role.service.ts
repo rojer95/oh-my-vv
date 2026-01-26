@@ -1,7 +1,8 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
 import type { FindManyOptions, FindOptionsWhere } from "typeorm";
+import { EasyFindManyOptions } from "../../lib/curd";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm/typeorm";
+import { AppDataSource } from "../../lib/typeorm";
 import { SystemRole } from "./system-role.entity";
 
 export abstract class SystemRoleService {
@@ -13,7 +14,7 @@ export abstract class SystemRoleService {
     return await this.repo.find(options);
   }
 
-  static async findAndCount(options: FindManyOptions<SystemRole>) {
+  static async findAndCount(options: EasyFindManyOptions<SystemRole>) {
     return await this.repo.findAndCount(options);
   }
 

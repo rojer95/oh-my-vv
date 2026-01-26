@@ -7,12 +7,12 @@ import {
 import { RouteObject, createHashRouter } from "react-router-dom";
 
 import { PERMISSIONS } from "@rojer/mf-common";
-import { SystemConfigPage } from "../page/config/system-config";
 import { LoginPage } from "../page/login";
 import { DashboardPage } from "../page/statistic/dashboard";
 import { SystemAccountPage } from "../page/system/account";
-import { RolePage } from "../page/system/role";
+import { SystemConfigPage } from "../page/system/config";
 import { DepartmentPage } from "../page/system/department";
+import { RolePage } from "../page/system/role";
 
 /**
  * 路由handle附加数据定义

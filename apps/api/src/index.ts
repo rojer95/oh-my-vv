@@ -8,7 +8,7 @@ import { errorPlugin } from "./lib/error";
 import { loggerPlugin } from "./lib/logger";
 import { queueWorkerPlugin } from "./lib/queue-worker";
 import { responsePlugin } from "./lib/response";
-import { typeormPlugin } from "./lib/typeorm/typeorm";
+import { typeormPlugin } from "./lib/typeorm";
 import { allRoutes } from "./route";
 
 z.config(z.locales.zhCN());

@@ -2,37 +2,11 @@ import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { TableRowActionProps } from "@/component/schema/typing";
+import { getSelectTreeAllNodeIds, transformSelectTreeData } from "@/util";
 import { Toast } from "@douyinfe/semi-ui";
 import { PERMISSIONS } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useEffect, useMemo, useRef, useState } from "react";
-
-const transformTreeData = (data: any[], disabledPath: string): any[] => {
-  if (!data || !Array.isArray(data)) return [];
-
-  return data.map((item) => ({
-    key: item.id,
-    label: item.name,
-    value: item.id,
-    disabled: String(item.path).startsWith(disabledPath),
-    children: item.children
-      ? transformTreeData(item.children, disabledPath)
-      : undefined,
-  }));
-};
-
-const getAllNodeIds = (data: any[]): (string | number)[] => {
-  if (!data || !Array.isArray(data)) return [];
-
-  const ids: (string | number)[] = [];
-  data.forEach((item) => {
-    ids.push(item.id);
-    if (item.children) {
-      ids.push(...getAllNodeIds(item.children));
-    }
-  });
-  return ids;
-};
 
 export const DepartmentPage = () => {
   const tableRef = useRef<SchemaTableInstance>(undefined);
@@ -50,11 +24,11 @@ export const DepartmentPage = () => {
   );
 
   const treeSelectData = useMemo(() => {
-    return transformTreeData(treeData || [], initValues?.path);
+    return transformSelectTreeData(treeData || [], initValues?.path);
   }, [treeData, initValues?.id]);
 
   const allExpandedKeys = useMemo(() => {
-    return getAllNodeIds(treeData || []);
+    return getSelectTreeAllNodeIds(treeData || [], false);
   }, [treeData]);
 
   useEffect(() => {
@@ -63,7 +37,7 @@ export const DepartmentPage = () => {
 
   const onOpenEditModal = (value: any) => {
     setInitValues(value);
-    setFormExpandedRowKeys(getAllNodeIds(treeData || []));
+    setFormExpandedRowKeys(getSelectTreeAllNodeIds(treeData || []));
     setEditVisible(true);
   };
 

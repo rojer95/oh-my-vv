@@ -1,14 +1,15 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
-import { isFinite, pick } from "lodash-es";
+import { isFinite, pick, uniq } from "lodash-es";
 import {
   EntityTarget,
+  FindOneOptions,
   IsNull,
   ObjectLiteral,
   TreeRepositoryNotSupportedError,
   type FindOptionsWhere,
 } from "typeorm";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm/typeorm";
+import { AppDataSource } from "../../lib/typeorm";
 import { SystemDepartment } from "./system-department.entity";
 import {
   SortableTreeRepository,
@@ -20,7 +21,24 @@ export abstract class SystemDepartmentService {
     return AppDataSource.getTreeRepository(SystemDepartment);
   }
 
-  static async findTrees(tenantId: number) {
+  static get treeRepo(): SortableTreeRepository<SystemDepartment> {
+    return AppDataSource.getTreeRepository(SystemDepartment).extend(
+      sortableTreeRepositoryMethods,
+    );
+  }
+
+  static async findSelfAndChildTreeIds(
+    where: FindOptionsWhere<SystemDepartment>,
+  ) {
+    const department = await this.repo.findOneByOrFail(where);
+    console.log("department", department);
+    const childrens = await this.treeRepo.findDescendants(department);
+    console.log("childrens", childrens);
+
+    return uniq([department.id, ...childrens.map((i) => i.id)]);
+  }
+
+  static async findTreeByTenantId(tenantId: number) {
     return await AppDataSource.transaction(async (t) => {
       const repo: SortableTreeRepository<SystemDepartment> = t
         .getTreeRepository(SystemDepartment)

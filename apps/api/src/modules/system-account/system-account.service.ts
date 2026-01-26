@@ -2,8 +2,9 @@ import { BusinessErrorCode } from "@rojer/mf-common";
 import type { FindManyOptions, FindOptionsWhere } from "typeorm";
 import { SystemAccount } from "./system-account.entity";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm/typeorm";
+import { AppDataSource } from "../../lib/typeorm";
 import { AuthService } from "../auth/auth.service";
+import { EasyFindManyOptions } from "../../lib/curd";
 
 export abstract class SystemAccountService {
   static get repo() {
@@ -14,7 +15,7 @@ export abstract class SystemAccountService {
     return await this.repo.find(options);
   }
 
-  static async findAndCount(options: FindManyOptions<SystemAccount>) {
+  static async findAndCount(options: EasyFindManyOptions<SystemAccount>) {
     return await this.repo.findAndCount(options);
   }
 

@@ -1,7 +1,7 @@
 import { isPlainObject } from "lodash-es";
 import { SystemOperationLog } from "./system-operation-log.entity";
 import { logger } from "../../lib/logger";
-import { AppDataSource } from "../../lib/typeorm/typeorm";
+import { AppDataSource } from "../../lib/typeorm";
 
 export abstract class OperationLogService {
   static sanitizeData(data: any): any {

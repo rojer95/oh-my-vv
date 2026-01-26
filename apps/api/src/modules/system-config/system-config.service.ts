@@ -1,16 +1,17 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
-import { pick } from "lodash-es";
-import { FindManyOptions, FindOptionsWhere } from "typeorm";
-import { SystemConfig } from "./system-config.entity";
+import { isFinite, pick } from "lodash-es";
+import { FindOptionsWhere } from "typeorm";
+import { EasyFindManyOptions } from "../../lib/curd";
 import { BusinessError } from "../../lib/error";
-import { AppDataSource } from "../../lib/typeorm/typeorm";
+import { AppDataSource } from "../../lib/typeorm";
+import { SystemConfig } from "./system-config.entity";
 
 export abstract class SystemConfigService {
   static get repo() {
     return AppDataSource.getRepository(SystemConfig);
   }
 
-  static async findAndCount(options: FindManyOptions<SystemConfig>) {
+  static async findAndCount(options: EasyFindManyOptions<SystemConfig>) {
     return await this.repo.findAndCount(options);
   }
 
@@ -22,12 +23,22 @@ export abstract class SystemConfigService {
     return config;
   }
 
-  static async findByKey(key: string) {
+  static async getValueByKey<type extends number | string>(
+    key: string,
+    valueType: "number" | "string",
+    defaultValue: type,
+  ): Promise<type> {
     const config = await this.repo.findOne({ where: { key } });
-    if (!config) {
-      throw new BusinessError(BusinessErrorCode.NotFound);
+    if (config) {
+      if (valueType === "number" && /^(-?\d+)(\.\d+)?$/.test(config.value)) {
+        return Number(config.value) as any;
+      }
+
+      if (valueType === "string" && config.value) {
+        return config.value.trim() as any;
+      }
     }
-    return config;
+    return defaultValue;
   }
 
   static async create(data: Partial<SystemConfig>) {

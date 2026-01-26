@@ -5,19 +5,20 @@ import {
 } from "@rojer/mf-common";
 import * as bcrypt from "bcryptjs";
 import { In } from "typeorm";
-import { SystemAccount } from "../system-account/system-account.entity";
-import { SystemRole } from "../system-role/system-role.entity";
 import { BusinessError } from "../../lib/error";
 import { logger } from "../../lib/logger";
 import { redis } from "../../lib/redis";
-import { AppDataSource } from "../../lib/typeorm/typeorm";
+import { AppDataSource } from "../../lib/typeorm";
 import { mailQueue } from "../../queue/mail.queue";
 import { CaptchaService } from "../helper/captcha.service";
 import { TotpService } from "../helper/totp.service";
+import { SystemAccount } from "../system-account/system-account.entity";
+import { SystemRole } from "../system-role/system-role.entity";
+import { SystemConfigService } from "../system-config/system-config.service";
 
 export abstract class AuthService {
   static salt = 10;
-  static ttl = 15 * 60; // 15分钟
+  static ttl = 15; // 15分钟
   static maxFailCount = 3; // 最多尝试次数
 
   /**
@@ -59,9 +60,16 @@ export abstract class AuthService {
    * @param ip
    */
   static async failOnce(key: string) {
+    const ttl = await SystemConfigService.getValueByKey<number>(
+      "sys:login:ttl",
+      "number",
+      this.ttl,
+    );
+
     const failKey = this.getFailKey(key);
     await redis.incrby(failKey, 1);
-    await redis.expire(failKey, this.ttl);
+
+    await redis.expire(failKey, ttl * 60);
   }
 
   /**
@@ -95,7 +103,13 @@ export abstract class AuthService {
 
     logger.debug(`key: ${key} failCount: ${failCount}`);
 
-    if (failCount > this.maxFailCount) {
+    const maxFailCount = await SystemConfigService.getValueByKey<number>(
+      "sys:login:maxFailCount",
+      "number",
+      this.maxFailCount,
+    );
+
+    if (failCount > maxFailCount) {
       const ttl = await this.getFailTtl(key);
       throw new BusinessError(BusinessErrorCode.TryLater, {
         t: `${ttl}分钟`,
@@ -208,13 +222,19 @@ export abstract class AuthService {
       ],
     });
 
+    const maxFailCount = await SystemConfigService.getValueByKey<number>(
+      "sys:login:maxFailCount",
+      "number",
+      this.maxFailCount,
+    );
+
     if (
       !systemAccount ||
       !this.checkPassword(password, systemAccount.password)
     ) {
       await this.failOnce(ip);
       throw new BusinessError(BusinessErrorCode.LoginFail, {
-        t: this.maxFailCount - failCount,
+        t: maxFailCount - failCount,
       });
     }
 
@@ -231,7 +251,7 @@ export abstract class AuthService {
       if (!TotpService.validate(systemAccount.totpSecret, totpToken)) {
         await this.failOnce(ip);
         throw new BusinessError(BusinessErrorCode.TotpTokenError, {
-          t: this.maxFailCount - failCount,
+          t: maxFailCount - failCount,
         });
       }
     }

@@ -2,6 +2,7 @@ import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { Toast } from "@douyinfe/semi-ui";
+import { PERMISSIONS } from "@rojer/mf-common";
 import { useRef, useState } from "react";
 
 export const SystemConfigPage = () => {
@@ -22,6 +23,12 @@ export const SystemConfigPage = () => {
 
     tableRef.current?.refresh?.();
     setEditVisible(false);
+  };
+
+  const onDelete = async (id: number) => {
+    await api.api.v1["system-config"]({ id }).delete();
+    Toast.success("删除成功");
+    tableRef.current?.refresh?.();
   };
 
   return (
@@ -86,21 +93,10 @@ export const SystemConfigPage = () => {
         title="系统配置"
         tableRef={tableRef}
         request={api.api.v1["system-config"].read.post}
-        updateAccess="system:config:update"
         createAccess="system:config:create"
-        deleteAccess="system:config:delete"
-        onUpdate={(record) => {
-          setInitValues(record);
-          setEditVisible(true);
-        }}
         onCreate={() => {
           setInitValues({});
           setEditVisible(true);
-        }}
-        onDelete={async (record) => {
-          await api.api.v1["system-config"]({ id: record.id }).delete();
-          Toast.success("删除成功");
-          tableRef.current?.refresh?.();
         }}
         columns={[
           { dataIndex: "id", title: "ID" },
@@ -145,6 +141,35 @@ export const SystemConfigPage = () => {
           {
             type: "action",
             width: 100,
+            tableActionRender: (record) => {
+              return [
+                {
+                  key: "edit",
+                  text: "编辑",
+                  permission: PERMISSIONS.systemDepartmentUpdate.key,
+                  onClick: () => {
+                    setInitValues(record);
+                    setEditVisible(true);
+                  },
+                },
+                {
+                  key: "del",
+                  text: "删除",
+                  disabled: record.buildIn,
+                  popconfirmProps: {
+                    title: "操作确认",
+                    content: "是否确认要删除该条数据？",
+                    okType: "danger",
+                    okText: "确认删除",
+                  },
+                  type: "danger",
+                  permission: PERMISSIONS.systemConfigDelete.key,
+                  onClick: async () => {
+                    onDelete(record.id);
+                  },
+                },
+              ];
+            },
           },
         ]}
       />

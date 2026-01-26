@@ -3,6 +3,7 @@ import { isArray } from "lodash-es";
 import {
   Between,
   FindManyOptions,
+  FindOptionsWhere,
   In,
   LessThan,
   LessThanOrEqual,
@@ -16,6 +17,12 @@ import z from "zod";
 type InjectRule = {
   tenantId?: boolean | string;
 };
+
+export interface EasyFindManyOptions<
+  Entity = any,
+> extends FindManyOptions<Entity> {
+  where?: FindOptionsWhere<Entity>;
+}
 
 const JoiItem = z.object({
   key: z.string().trim().min(1),
@@ -169,7 +176,7 @@ export const curdPlugin = new Elysia({ name: "lib_curd" })
         };
       }
       const data = getData(request.method, query, body);
-      const options: FindManyOptions = {
+      const options: EasyFindManyOptions = {
         where: getWhere(injectRule, data, tenantId!),
         order: getOrder(data),
         ...getPager(data),

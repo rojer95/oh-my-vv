@@ -1,9 +1,12 @@
 import { PERMISSIONS } from "@rojer/mf-common";
 import Elysia from "elysia";
+import { isFinite } from "lodash-es";
+import { In } from "typeorm";
 import z from "zod";
 import { authPlugin } from "../../lib/auth";
 import { curdPlugin } from "../../lib/curd";
 import { zStringId } from "../../lib/custom-zod";
+import { SystemDepartmentService } from "../system-department/system-department.service";
 import { SystemRoleService } from "../system-role/system-role.service";
 import {
   SystemAccountCreateZod,
@@ -28,7 +31,10 @@ export const systemAccountController = new Elysia({ name: "systemAccount" })
             select: ["id", "name"],
           });
 
-          return { roles };
+          const departments =
+            await SystemDepartmentService.findTreeByTenantId(tenantId);
+
+          return { roles, departments };
         },
         {
           auth: PERMISSIONS.systemAccountView,
@@ -36,7 +42,15 @@ export const systemAccountController = new Elysia({ name: "systemAccount" })
       )
       .post(
         "read",
-        async ({ findManyOption }) => {
+        async ({ findManyOption, tenantId }) => {
+          if (isFinite(findManyOption?.where?.departmentId)) {
+            const departmentIds =
+              await SystemDepartmentService.findSelfAndChildTreeIds({
+                id: findManyOption?.where?.departmentId,
+                tenantId,
+              });
+            findManyOption.where!.departmentId = In(departmentIds);
+          }
           return await SystemAccountService.findAndCount(findManyOption);
         },
         {

@@ -3,26 +3,47 @@ import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
 import { useMainRoute } from "@/hook/route.hook";
 import { adminModel } from "@/mobx/admin";
-import { findRoute } from "@/util";
+import {
+  findRoute,
+  getSelectTreeAllNodeIds,
+  transformSelectTreeData,
+} from "@/util";
 import { Space, Tag, Toast } from "@douyinfe/semi-ui";
 import { RoleDataPermType, RoleDataPermTypeOptions } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 export const RolePage = () => {
   const mainRoute = useMainRoute();
   const tableRef = useRef<SchemaTableInstance>(undefined);
   const [editVisible, setEditVisible] = useState(false);
   const [initValues, setInitValues] = useState<any>({});
-  const { data: options } = useRequest<{ permissions: any[] }, []>(
-    api.api.v1["system-role"].options.get,
-  );
+  const { data: options } = useRequest<
+    { permissions: any[]; departments: any[] },
+    []
+  >(api.api.v1["system-role"].options.get);
+  const [formExpandedRowKeys, setFormExpandedRowKeys] = useState<string[]>([]);
+
+  const treeSelectData = useMemo(() => {
+    return transformSelectTreeData(options?.departments || []);
+  }, [options?.departments]);
 
   const isInRoute = (item: any) => {
     return !!findRoute(mainRoute, (i) => {
       if (!i || !i.handle || !item) return false;
       return i.handle?.access === item.key;
     });
+  };
+
+  const onOpenEditModal = (value: any) => {
+    setFormExpandedRowKeys(getSelectTreeAllNodeIds(options?.departments || []));
+    setInitValues(value);
+    setEditVisible(true);
+  };
+
+  const onCloseEditModal = () => {
+    setInitValues({});
+    setEditVisible(false);
   };
 
   const onSubmit = async (value: any) => {
@@ -45,8 +66,7 @@ export const RolePage = () => {
         modalProps={{
           visible: editVisible,
           onCancel: () => {
-            setInitValues({});
-            setEditVisible(false);
+            onCloseEditModal();
           },
           title: `${initValues?.id ? "编辑" : "创建"}角色`,
         }}
@@ -67,16 +87,23 @@ export const RolePage = () => {
           {
             dataIndex: "department",
             title: "自定义部门范围",
+            width: "100%",
             props: {
               multiple: true,
+              treeData: treeSelectData,
+              expandedKeys: formExpandedRowKeys,
+              checkRelation: "unRelated",
+              onExpand: (_expandedKeys) =>
+                setFormExpandedRowKeys(_expandedKeys),
             },
             deps: ["dataPermType"],
-            required: (values: any) =>
+            required: ({ values }) =>
               [RoleDataPermType.custom].includes(values?.dataPermType),
-            type: (values: any) =>
-              [RoleDataPermType.custom].includes(values?.dataPermType)
-                ? "select"
-                : "hidden",
+            type: ({ values }) => {
+              return [RoleDataPermType.custom].includes(values?.dataPermType)
+                ? "tree-select"
+                : "hidden";
+            },
           },
           {
             dataIndex: "menuPerm",
@@ -117,12 +144,10 @@ export const RolePage = () => {
         createAccess="system:role:create"
         deleteAccess="system:role:delete"
         onUpdate={(record) => {
-          setInitValues(record);
-          setEditVisible(true);
+          onOpenEditModal(record);
         }}
         onCreate={() => {
-          setInitValues({});
-          setEditVisible(true);
+          onOpenEditModal({});
         }}
         onDelete={async (record) => {
           await api.api.v1["system-role"]({ id: record.id }).delete();

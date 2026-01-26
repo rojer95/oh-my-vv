@@ -4,7 +4,6 @@ import {
   CreatedAtIndex,
   Id,
   PgDataType,
-  TenantIndex,
   UpdatedAt,
 } from "../migration-common-column";
 
