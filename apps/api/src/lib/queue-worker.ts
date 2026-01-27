@@ -1,5 +1,4 @@
 import Elysia from "elysia";
-import { logger } from "./logger";
 
 export const queueWorkerPlugin = ({ workers }: { workers: string[] }) =>
   new Elysia({ name: "lib_queue" }).onStart(() => {

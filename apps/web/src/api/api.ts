@@ -1,7 +1,9 @@
+import { adminModel } from "@/mobx/admin";
 import { Toast } from "@douyinfe/semi-ui";
 import { treaty } from "@elysiajs/eden";
 import { STORAGE_AUTH_KEY } from "@rojer/mf-common";
-import type { App } from "../../api/src/index";
+import type { App } from "../../../api/src/index";
+import { MyEdenTreaty } from "./types";
 
 export const treatyApi = treaty<App>(import.meta.env.VITE_API as string, {
   onRequest: () => {
@@ -17,7 +19,7 @@ export const treatyApi = treaty<App>(import.meta.env.VITE_API as string, {
   },
 });
 
-const createProxy = (target: any): any => {
+const createProxy = (target: any): MyEdenTreaty.Create<App> => {
   return new Proxy(target, {
     get(innerTarget: any, prop: string | symbol) {
       const value = Reflect.get(innerTarget, prop);
@@ -31,8 +33,10 @@ const createProxy = (target: any): any => {
           const { data, error } = res;
           if (data.code !== 0 || error) {
             Toast.error(data?.message || error?.message);
+            if (data.code === 401) adminModel.logout();
             throw new Error(data.message || error?.message);
           }
+
           return data.data;
         };
       }

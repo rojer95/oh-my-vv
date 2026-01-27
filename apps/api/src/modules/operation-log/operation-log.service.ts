@@ -4,6 +4,11 @@ import { logger } from "../../lib/logger";
 import { AppDataSource } from "../../lib/typeorm";
 
 export abstract class OperationLogService {
+  /**
+   * 日志数据脱敏
+   * @param data
+   * @returns
+   */
   static sanitizeData(data: any): any {
     if (!data || !isPlainObject(data)) return data;
 
@@ -19,7 +24,9 @@ export abstract class OperationLogService {
     const sanitized = { ...data };
 
     for (const key in sanitized) {
-      if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
+      if (
+        sensitiveFields.some((field) => key.toLowerCase().indexOf(field) >= 0)
+      ) {
         sanitized[key] = "************";
       } else if (typeof sanitized[key] === "object") {
         sanitized[key] = this.sanitizeData(sanitized[key]);
@@ -29,6 +36,10 @@ export abstract class OperationLogService {
     return sanitized;
   }
 
+  /**
+   * 记录日志
+   * @param options
+   */
   static async createOperationLog(options: {
     operatorId: number;
     operatorAccount: string;

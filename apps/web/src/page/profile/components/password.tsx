@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { SchemaForm } from "@/component/schema/form";
 
 import { adminModel } from "@/mobx/admin";
-import { api } from "../../api";
+import { api } from "@/api";
 
 export const ChangePasswordModal = ({
   visible,
@@ -14,7 +14,7 @@ export const ChangePasswordModal = ({
   visible: boolean;
   onCancel: any;
 }) => {
-  const formApi = useRef<FormApi>();
+  const formApi = useRef<FormApi>(undefined);
 
   useEffect(() => {
     if (visible) formApi.current?.reset();
@@ -29,7 +29,9 @@ export const ChangePasswordModal = ({
       }}
       layout="modal"
       getFormApi={(e) => (formApi.current = e)}
-      onSubmit={api.v1.auth.changePassword}
+      onSubmit={async (values) => {
+        await api.api.v1.auth.password.put(values);
+      }}
       onSuccess={() => {
         Toast.success("修改成功，请您重新登陆");
         adminModel.logout();

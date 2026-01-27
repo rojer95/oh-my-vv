@@ -1,4 +1,5 @@
-import { TotpModal } from "@/component/totp-modal";
+import { api } from "@/api";
+import { adminModel } from "@/mobx/admin";
 import {
   Button,
   Card,
@@ -8,19 +9,18 @@ import {
   Tooltip,
   Typography,
 } from "@douyinfe/semi-ui";
-import { QRCodeSVG } from "qrcode.react";
-import { useMemo, useState } from "react";
-import { ChangePasswordModal } from "./password";
-
-import { adminModel } from "@/mobx/admin";
 import { observer } from "mobx-react-lite";
-import { api } from "../../api";
-import { ChangeMailModal } from "../../component/change-mail-modal";
+import { QRCodeSVG } from "qrcode.react";
+import { useMemo, useRef, useState } from "react";
+import { ChangeMailModal } from "./components/change-mail-modal";
+import { ChangePasswordModal } from "./components/password";
+import { TotpModal } from "../../component/totp-modal";
 
 export const ProfileInfoPage = observer(() => {
   const [passwordModal, setPasswordModal] = useState(false);
   const [mailModal, setMailModal] = useState(false);
 
+  const currentTotpSecret = useRef<string>(undefined);
   const profile = useMemo(() => {
     return adminModel.profile;
   }, [adminModel.profile]);
@@ -50,41 +50,50 @@ export const ProfileInfoPage = observer(() => {
       />
 
       <TotpModal
-        visible={totp.visible && totp.mode === "unbind"}
+        visible={totp.visible && ["unbind", "bind-done"].includes(totp.mode)}
         onCancel={() => {
           setTotp({ visible: false, qrcode: "", mode: "bind" });
         }}
         onSuccess={async (code: string) => {
-          await api.v1.auth.unBindTotp(code);
+          if (totp.mode === "bind-done" && !currentTotpSecret.current) {
+            Toast.warning("Totp数据缺失");
+            return;
+          }
+
+          await api.api.v1.auth.totp.put({
+            totpSecret: currentTotpSecret.current,
+            code,
+          });
+
+          Toast.success(totp.mode === "unbind" ? "解绑成功" : "绑定成功");
           setTotp({ visible: false, qrcode: "", mode: "bind" });
           adminModel.loadProfile();
-          Toast.success("解绑成功");
         }}
       />
 
       <Modal
         hasCancel={false}
-        okText="我已扫码绑定，确认关闭"
+        okText="我已扫码绑定，进行验证"
         visible={totp.visible && totp.mode === "bind"}
-        title="扫码绑定（请扫码成功后再关闭）"
+        title="扫码绑定"
         keepDOM={false}
         closeOnEsc={false}
         maskClosable={false}
         onOk={() => {
-          setTotp({ visible: false, qrcode: "", mode: "bind" });
+          setTotp({ visible: true, qrcode: "", mode: "bind-done" });
           adminModel.loadProfile();
         }}
       >
         <div style={{ textAlign: "center", padding: 40 }}>
           <div style={{ marginBottom: 20, color: "red" }}>
             <Typography.Text style={{ color: "red", fontWeight: "bold" }}>
-              请立即使用
+              请使用
               <br />
               <Tooltip content="各大软件商店均可下载该APP，支持安卓、IOS系统">
                 微软 Authenticator 或 Google身份验证器APP
               </Tooltip>
               <br />
-              扫码绑定，以免出现无法登录的情况。
+              扫码绑定。
             </Typography.Text>
             <br />
           </div>
@@ -130,17 +139,15 @@ export const ProfileInfoPage = observer(() => {
             main={`多重认证`}
             extra={
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (!profile?.totp) {
-                    Modal.confirm({
-                      title: "操作提示",
-                      content:
-                        "生成二维码后，请务必先用“微软 Authenticator 或 Google身份验证器APP”扫码绑定，确认成功后再关闭二维码窗口！",
-                      onOk: async () => {
-                        const qrcode = await api.v1.auth.bindTotp();
-                        setTotp({ visible: true, qrcode, mode: "bind" });
-                      },
-                      okText: "我明白，扫码成功后才能关闭窗口",
+                    const { otpauth_url, base32 } =
+                      await api.api.v1.auth.totp.post();
+                    currentTotpSecret.current = base32;
+                    setTotp({
+                      visible: true,
+                      qrcode: otpauth_url,
+                      mode: "bind",
                     });
                   } else {
                     setTotp({ visible: true, qrcode: "", mode: "unbind" });

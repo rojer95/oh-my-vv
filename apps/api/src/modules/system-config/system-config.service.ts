@@ -1,7 +1,6 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
-import { isFinite, pick } from "lodash-es";
-import { FindOptionsWhere } from "typeorm";
-import { EasyFindManyOptions } from "../../lib/curd";
+import { pick } from "lodash-es";
+import { FindManyOptions, FindOptionsWhere } from "typeorm";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
 import { SystemConfig } from "./system-config.entity";
@@ -11,7 +10,7 @@ export abstract class SystemConfigService {
     return AppDataSource.getRepository(SystemConfig);
   }
 
-  static async findAndCount(options: EasyFindManyOptions<SystemConfig>) {
+  static async findAndCount(options: FindManyOptions<SystemConfig>) {
     return await this.repo.findAndCount(options);
   }
 

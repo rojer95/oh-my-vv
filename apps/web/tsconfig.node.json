@@ -32,7 +32,7 @@
       "@/schema/*": ["./src/schema/*"],
       "@/util": ["./src/util/index.ts"],
       "@/dayjs": ["./src/dayjs.ts"],
-      "@/api": ["./src/api.ts"],
+      "@/api": ["./src/api/api.ts"],
       "@/global.css": ["./src/@/global.css"]
     }
   },

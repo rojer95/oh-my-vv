@@ -1,10 +1,9 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
 import type { FindManyOptions, FindOptionsWhere } from "typeorm";
-import { SystemAccount } from "./system-account.entity";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
 import { AuthService } from "../auth/auth.service";
-import { EasyFindManyOptions } from "../../lib/curd";
+import { SystemAccount } from "./system-account.entity";
 
 export abstract class SystemAccountService {
   static get repo() {
@@ -15,12 +14,26 @@ export abstract class SystemAccountService {
     return await this.repo.find(options);
   }
 
-  static async findAndCount(options: EasyFindManyOptions<SystemAccount>) {
+  static async findAndCount(options: FindManyOptions<SystemAccount>) {
     return await this.repo.findAndCount(options);
   }
 
   static async findOneBy(where: FindOptionsWhere<SystemAccount>) {
     const account = await this.repo.findOneBy(where);
+    if (!account) {
+      throw new BusinessError(BusinessErrorCode.SystemAccountNotFound);
+    }
+    return account;
+  }
+
+  static async findOneWithSecretBy(where: FindOptionsWhere<SystemAccount>) {
+    const account = await this.repo
+      .createQueryBuilder("systemAccount")
+      .addSelect("systemAccount.password")
+      .addSelect("systemAccount.totpSecret")
+      .where(where)
+      .getOne();
+
     if (!account) {
       throw new BusinessError(BusinessErrorCode.SystemAccountNotFound);
     }

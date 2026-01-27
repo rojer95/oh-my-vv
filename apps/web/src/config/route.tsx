@@ -13,6 +13,7 @@ import { SystemAccountPage } from "../page/system/account";
 import { SystemConfigPage } from "../page/system/config";
 import { DepartmentPage } from "../page/system/department";
 import { RolePage } from "../page/system/role";
+import { ProfileInfoPage } from "../page/profile/info";
 
 /**
  * 路由handle附加数据定义
@@ -23,12 +24,10 @@ export type RouteExtraHandle = {
 };
 
 const mainRoute: RouteObject[] = [
-  /**
   {
     path: "profile",
     element: <ProfileInfoPage />,
   },
-   */
   {
     path: "",
     handle: {

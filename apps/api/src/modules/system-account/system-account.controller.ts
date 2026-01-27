@@ -43,14 +43,15 @@ export const systemAccountController = new Elysia({ name: "systemAccount" })
       .post(
         "read",
         async ({ findManyOption, tenantId }) => {
-          if (isFinite(findManyOption?.where?.departmentId)) {
+          if (isFinite(findManyOption.where?.departmentId)) {
             const departmentIds =
               await SystemDepartmentService.findSelfAndChildTreeIds({
-                id: findManyOption?.where?.departmentId,
+                id: findManyOption.where?.departmentId,
                 tenantId,
               });
-            findManyOption.where!.departmentId = In(departmentIds);
+            findManyOption.where.departmentId = In(departmentIds);
           }
+
           return await SystemAccountService.findAndCount(findManyOption);
         },
         {

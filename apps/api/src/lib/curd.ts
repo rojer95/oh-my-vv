@@ -1,8 +1,9 @@
 import Elysia from "elysia";
-import { isArray } from "lodash-es";
+import { isArray, isNil } from "lodash-es";
 import {
   Between,
   FindManyOptions,
+  FindOptionsSelect,
   FindOptionsWhere,
   In,
   LessThan,
@@ -18,10 +19,11 @@ type InjectRule = {
   tenantId?: boolean | string;
 };
 
-export interface EasyFindManyOptions<
+export interface CurdFindManyOptions<
   Entity = any,
 > extends FindManyOptions<Entity> {
-  where?: FindOptionsWhere<Entity>;
+  where: FindOptionsWhere<Entity>;
+  select?: FindOptionsSelect<Entity>;
 }
 
 const JoiItem = z.object({
@@ -49,9 +51,9 @@ const getSchema = (key: string) => {
   return z.object({ [key]: z.array(JoiItem).optional().default([]) });
 };
 
-const getData = (method: string = "POST", query: any, body: any) => {
-  if (method === "POST") return body ?? {};
-  if (method === "GET") return query ?? {};
+const getData = (method: string = "POST", req: { query: any; body: any }) => {
+  if (method === "POST") return req.body ?? {};
+  if (method === "GET") return req.query ?? {};
   return {};
 };
 
@@ -88,13 +90,11 @@ const getWhereItem = (item: any) => {
  * @returns
  */
 const getWhere = (
-  injectRule: InjectRule = {
-    tenantId: "tenantId",
-  },
+  injectRule: InjectRule,
   data: any,
-  tenantId: number,
+  tenantId?: number,
 ): Record<string, any> => {
-  const where: any = {};
+  const where: FindOptionsWhere<any> = {};
 
   const parseResult = getSchema("where").safeParse(data);
   if (!parseResult.success) throw parseResult.error;
@@ -107,7 +107,7 @@ const getWhere = (
 
   if (injectRule?.tenantId) {
     where[injectRule.tenantId === true ? "tenantId" : injectRule.tenantId] =
-      tenantId;
+      isNil(tenantId) ? -1 : tenantId;
   }
 
   return where;
@@ -170,14 +170,14 @@ export const curdPlugin = new Elysia({ name: "lib_curd" })
   }))
   .macro("findManyOption", (injectRule?: InjectRule | true) => ({
     resolve: ({ query, body, request, tenantId }) => {
-      if (injectRule === true) {
+      if (injectRule === true || injectRule === undefined) {
         injectRule = {
           tenantId: "tenantId",
         };
       }
-      const data = getData(request.method, query, body);
-      const options: EasyFindManyOptions = {
-        where: getWhere(injectRule, data, tenantId!),
+      const data = getData(request.method, { query, body });
+      const options: CurdFindManyOptions = {
+        where: getWhere(injectRule, data, tenantId),
         order: getOrder(data),
         ...getPager(data),
       };

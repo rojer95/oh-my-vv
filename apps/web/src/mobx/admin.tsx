@@ -40,11 +40,6 @@ class AdminModel {
       this.loading = true;
       this.profile = yield api.api.v1.auth.profile.get();
       this.logined = true;
-    } catch (error) {
-      this.logined = false;
-      localStorage.removeItem(STORAGE_AUTH_KEY);
-      sessionStorage.removeItem(STORAGE_AUTH_KEY);
-      router?.navigate?.("/", { replace: true });
     } finally {
       this.loading = false;
     }
@@ -53,6 +48,7 @@ class AdminModel {
   }
 
   logout() {
+    this.logined = false;
     localStorage.removeItem(STORAGE_AUTH_KEY);
     sessionStorage.removeItem(STORAGE_AUTH_KEY);
     router?.navigate?.(`/`);

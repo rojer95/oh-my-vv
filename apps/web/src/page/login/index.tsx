@@ -14,13 +14,13 @@ import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 
 import logo from "@/asset/logo.svg";
 import { TimerButton } from "@/component/timer-button";
-import { TotpModal } from "@/component/totp-modal";
 import { adminModel } from "@/mobx/admin";
 import { STORAGE_AUTH_KEY } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useNavigate } from "react-router-dom";
 import { LoginPageStyled } from "./style";
 import { api } from "@/api";
+import { TotpModal } from "@/component/totp-modal";
 
 export const LoginPage = () => {
   const navigate = useNavigate();

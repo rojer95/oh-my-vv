@@ -1,11 +1,17 @@
-import { ProfileType } from "@rojer/mf-common";
+import { BusinessErrorCode, ProfileType } from "@rojer/mf-common";
 import { Elysia } from "elysia";
 import { authPlugin } from "../../lib/auth";
+import { BusinessError } from "../../lib/error";
 import { CaptchaService } from "../helper/captcha.service";
+import { SystemAccountService } from "../system-account/system-account.service";
 import {
+  BindUnBindMailDto,
+  ChangePasswordDto,
   ForgetResetPasswordDto,
   ForgetSendCodeDto,
   LoginZod,
+  SendMailCodeDto,
+  TotpBindDto,
   TotpZod,
 } from "./auth.dto";
 import { AuthService } from "./auth.service";
@@ -87,16 +93,113 @@ export const authController = new Elysia()
       .get(
         "/profile",
         async ({ user }) => {
-          const profile: ProfileType = {
+          const account = await SystemAccountService.findOneWithSecretBy({
             id: user!.id,
-            accountType: user!.accountType,
-            realName: user!.realName,
-            mail: user!.mail,
-            totp: !!user!.totpSecret,
-            permissions: await AuthService.getPermissionsByUser(user!),
+          });
+
+          console.log(account);
+
+          const profile: ProfileType = {
+            id: account.id,
+            accountType: account.accountType,
+            realName: account.realName,
+            mail: account.mail,
+            totp: !!account.totpSecret,
+            permissions: await AuthService.getPermissionsByUser(account),
           };
           return profile;
         },
         { auth: true },
+      )
+      /** 绑定/解绑邮箱 - 发送验证码 */
+      .post(
+        "/mail",
+        async ({ user, body }) => {
+          const mail = user!.mail || body.mail;
+
+          if (!mail)
+            throw new BusinessError(BusinessErrorCode.AccountNotBindMain);
+
+          return await AuthService.sendCodeToMail(
+            user!.id!,
+            mail,
+            user?.mail ? "解绑邮箱" : "绑定邮箱",
+          );
+        },
+        { auth: true, body: SendMailCodeDto },
+      )
+      /** 绑定/解绑邮箱 - 完成操作 */
+      .put(
+        "/mail",
+        async ({ user, body }) => {
+          const isUnBind = !!user!.mail;
+
+          const targetMail = isUnBind ? "" : body.mail;
+
+          return await AuthService.checkCodeAndChangeMail(
+            user!.id!,
+            isUnBind ? body.mail : targetMail,
+            body.code,
+            targetMail,
+          );
+        },
+        { auth: true, body: BindUnBindMailDto },
+      )
+      /** 重置密码 */
+      .put(
+        "/password",
+        async ({ user, body }) => {
+          const accountId = user!.id!;
+
+          const account = await SystemAccountService.findOneWithSecretBy({
+            id: accountId,
+          });
+
+          const checkKey = AuthService.getAccountIdCheckKey(accountId);
+          await AuthService.getAndCheckFailCount(checkKey);
+
+          if (!AuthService.checkPassword(body.oldpassword, account.password)) {
+            await AuthService.failOnce(checkKey);
+            throw new BusinessError(BusinessErrorCode.AccountPasswordIncorrect);
+          }
+
+          return await AuthService.resetPassword(accountId, body.password);
+        },
+        { auth: true, body: ChangePasswordDto },
+      )
+      /** 绑定TOTP - 生成 */
+      .post(
+        "/totp",
+        async () => {
+          return await AuthService.generateTotp();
+        },
+        { auth: true },
+      )
+      /** 绑定TOTP - 绑定 */
+      .put(
+        "/totp",
+        async ({ user, body }) => {
+          const accountId = user!.id!;
+
+          const account = await SystemAccountService.findOneWithSecretBy({
+            id: accountId,
+          });
+
+          const isBind = !account.totpSecret;
+
+          if (isBind) {
+            if (!body.totpSecret)
+              throw new BusinessError(BusinessErrorCode.TotpTokenIncorrect);
+
+            return await AuthService.bindTotp(
+              user!.id!,
+              body.totpSecret,
+              body.code,
+            );
+          } else {
+            return await AuthService.unbindTotp(user!.id!, body.code);
+          }
+        },
+        { auth: true, body: TotpBindDto },
       ),
   );

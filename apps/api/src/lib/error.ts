@@ -59,7 +59,8 @@ export const errorPlugin = () =>
           break;
 
         default:
-          logger.error(error);
+          logger.error((error as Error).message);
+          logger.error((error as Error).stack);
           res = status(200, { code: 500, message: (error as Error)?.message });
           break;
       }

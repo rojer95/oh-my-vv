@@ -41,7 +41,7 @@ export default defineConfig({
       },
       {
         find: "@/api",
-        replacement: path.resolve(__dirname, "./src/api"),
+        replacement: path.resolve(__dirname, "./src/api/api"),
       },
       {
         find: "@/global.css",

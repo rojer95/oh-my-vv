@@ -4,6 +4,7 @@ import {
   PERMISSIONS,
 } from "@rojer/mf-common";
 import * as bcrypt from "bcryptjs";
+import { isArray } from "lodash-es";
 import { In } from "typeorm";
 import { BusinessError } from "../../lib/error";
 import { logger } from "../../lib/logger";
@@ -13,8 +14,9 @@ import { mailQueue } from "../../queue/mail.queue";
 import { CaptchaService } from "../helper/captcha.service";
 import { TotpService } from "../helper/totp.service";
 import { SystemAccount } from "../system-account/system-account.entity";
-import { SystemRole } from "../system-role/system-role.entity";
 import { SystemConfigService } from "../system-config/system-config.service";
+import { SystemRole } from "../system-role/system-role.entity";
+import { SystemAccountService } from "../system-account/system-account.service";
 
 export abstract class AuthService {
   static salt = 10;
@@ -119,6 +121,11 @@ export abstract class AuthService {
     return failCount;
   }
 
+  /**
+   * 获取验证码状态
+   * @param ip
+   * @returns
+   */
   static async getCaptchaStatus(ip: string) {
     try {
       const count = await this.getAndCheckFailCount(ip);
@@ -144,8 +151,20 @@ export abstract class AuthService {
     return { status: target && target.totpSecret ? true : false };
   }
 
+  /**
+   * 根据用户获取用户全部权限
+   * @param user
+   * @returns
+   */
   static async getPermissionsByUser(user: SystemAccount) {
-    if (user.isSuper) return Object.values(PERMISSIONS).map((i) => i.key);
+    const AllPermissionByAccountType = Object.values(PERMISSIONS).filter(
+      (permission) => {
+        if (!isArray(permission.accountType)) return true;
+        return permission.accountType.includes(user.accountType);
+      },
+    );
+
+    if (user.isSuper) return AllPermissionByAccountType.map((i) => i.key);
 
     const roles = await AppDataSource.getRepository(SystemRole).find({
       where: {
@@ -156,14 +175,26 @@ export abstract class AuthService {
 
     const allPermissions = new Set<string>();
 
-    for (const role of roles) {
-      (role.menuPerm || []).forEach((p: string) => allPermissions.add(p));
+    for (const permission of AllPermissionByAccountType) {
+      if (
+        (roles || []).some((role) =>
+          (role.menuPerm || []).includes(permission.key),
+        )
+      ) {
+        allPermissions.add(permission.key);
+      }
     }
 
     return Array.from(allPermissions);
   }
 
-  static async checkPermission(
+  /**
+   * 验证用户是否具备某权限
+   * @param user
+   * @param permissionKey
+   * @returns
+   */
+  static async hasPermi(
     user: SystemAccount,
     permissionKey: string,
   ): Promise<boolean> {
@@ -172,6 +203,31 @@ export abstract class AuthService {
     }
     const allPermissions = await this.getPermissionsByUser(user);
     return allPermissions.includes(permissionKey);
+  }
+
+  /**
+   * 验证用户是否不具备某权限，与 hasPermi逻辑相反
+   * @param user
+   * @param permissionKey
+   */
+  static async lacksPermi(user: SystemAccount, permissionKey: string) {
+    return !(await this.hasPermi(user, permissionKey));
+  }
+
+  /**
+   * 验证用户是否具有以下任意一个权限
+   * @param user
+   * @param permissionKeys
+   * @returns
+   */
+  static async hasAnyPermi(user: SystemAccount, permissionKeys: string[]) {
+    if (user.isSuper) {
+      return true;
+    }
+    const allPermissions = await this.getPermissionsByUser(user);
+    return permissionKeys.some((permissionKey) =>
+      allPermissions.includes(permissionKey),
+    );
   }
 
   /**
@@ -341,6 +397,125 @@ export abstract class AuthService {
       .update()
       .set({ password: this.hashPassword(password) })
       .where({ id: admin.id })
+      .execute();
+  }
+
+  static async sendCodeToMail(accountId: number, mail: string, title: string) {
+    const { text } = await CaptchaService.text({
+      ttl: 300,
+      type: "number",
+      id: `admin-bind.${mail}`,
+      extra: {
+        accountId,
+      },
+    });
+
+    await mailQueue.add("send", {
+      data: {
+        to: mail,
+        subject: title,
+        text: `您的验证码为：${text} （五分钟有效）`,
+      },
+    });
+  }
+
+  /**
+   * 修改邮箱
+   * @param checkMail
+   * @param code
+   * @param changedMail
+   */
+  static async checkCodeAndChangeMail(
+    accountId: number,
+    checkMail: string,
+    code: string,
+    changedMail: string,
+  ) {
+    const checkPass = await CaptchaService.checkLimitCount(
+      `admin-bind.${checkMail}`,
+      code,
+    );
+
+    if (checkPass === false) {
+      throw new BusinessError(BusinessErrorCode.CaptchaCodeError);
+    }
+
+    await AppDataSource.getRepository(SystemAccount)
+      .createQueryBuilder()
+      .update()
+      .set({ mail: changedMail })
+      .where({ id: accountId })
+      .execute();
+  }
+
+  static getAccountIdCheckKey(accountId: number) {
+    return `auid:${accountId}`;
+  }
+
+  static async resetPassword(accountId: number, newPassword: string) {
+    await AppDataSource.getRepository(SystemAccount)
+      .createQueryBuilder()
+      .update()
+      .set({ password: this.hashPassword(newPassword) })
+      .where({ id: accountId })
+      .execute();
+  }
+
+  /**
+   * 生成多重认证
+   * @returns
+   */
+  static async generateTotp() {
+    return TotpService.generate();
+  }
+
+  /**
+   * 绑定多重认证
+   * @param id
+   * @returns
+   */
+  static async bindTotp(id: number, totpSecret: string, code: string) {
+    const target = await SystemAccountService.findOneWithSecretBy({
+      id,
+    });
+
+    if (target.totpSecret) {
+      throw new BusinessError(BusinessErrorCode.TotpAlreadyBind);
+    }
+
+    const pass = TotpService.validate(totpSecret, code);
+    if (!pass) throw new BusinessError(BusinessErrorCode.TotpTokenIncorrect);
+
+    await AppDataSource.getRepository(SystemAccount)
+      .createQueryBuilder()
+      .update()
+      .set({ totpSecret })
+      .where({ id })
+      .execute();
+  }
+
+  /**
+   * 绑定多重解除绑定
+   * @param id
+   * @returns
+   */
+  static async unbindTotp(id: number, code: string) {
+    const target = await SystemAccountService.findOneWithSecretBy({
+      id,
+    });
+
+    if (!target.totpSecret) {
+      throw new BusinessError(BusinessErrorCode.TotpNotBind);
+    }
+
+    const pass = TotpService.validate(target.totpSecret, code);
+    if (!pass) throw new BusinessError(BusinessErrorCode.TotpTokenIncorrect);
+
+    await AppDataSource.getRepository(SystemAccount)
+      .createQueryBuilder()
+      .update()
+      .set({ totpSecret: "" })
+      .where({ id })
       .execute();
   }
 }

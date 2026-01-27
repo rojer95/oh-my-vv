@@ -12,7 +12,7 @@ export const TotpModal = ({
   onCancel: any;
   onSuccess: any;
 }) => {
-  const formApi = useRef<FormApi>();
+  const formApi = useRef<FormApi>(undefined);
 
   useEffect(() => {
     if (visible) {

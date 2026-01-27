@@ -1,14 +1,19 @@
 import { bearer } from "@elysiajs/bearer";
 import { jwt } from "@elysiajs/jwt";
-import { BusinessErrorCode, PermissionTreeNode } from "@rojer/mf-common";
+import {
+  AccountType,
+  AuthValidateType,
+  BusinessErrorCode,
+  PermissionTreeNode,
+} from "@rojer/mf-common";
 import Elysia from "elysia";
+import { isArray, isFinite } from "lodash-es";
 import { JwtPayload } from "../interface";
-import { BusinessError } from "./error";
-import { ipPlugin } from "./ip";
-import { SystemAccountService } from "../modules/system-account/system-account.service";
 import { AuthService } from "../modules/auth/auth.service";
 import { OperationLogService } from "../modules/operation-log/operation-log.service";
-import { isFinite } from "lodash-es";
+import { SystemAccountService } from "../modules/system-account/system-account.service";
+import { BusinessError } from "./error";
+import { ipPlugin } from "./ip";
 
 export const authPlugin = new Elysia({ name: "lib_auth" })
   .use(bearer())
@@ -43,7 +48,15 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
     return { user: null };
   })
   .macro({
-    auth: (permission: PermissionTreeNode | true) => ({
+    auth: (
+      permission:
+        | true
+        | PermissionTreeNode
+        | {
+            validateType: AuthValidateType;
+            permission: PermissionTreeNode | PermissionTreeNode[];
+          },
+    ) => ({
       async beforeHandle({ user }) {
         if (!user) {
           throw new BusinessError(BusinessErrorCode.Unauthorized);
@@ -52,16 +65,76 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
         // true, 只需要验证登录状态
         if (permission === true) return;
 
-        const hasPerm = await AuthService.checkPermission(user, permission.key);
+        let validateType: AuthValidateType = "hasPermi";
+        let validatePermissions: PermissionTreeNode[] = [];
 
-        if (!hasPerm) {
+        if ("validateType" in permission) {
+          validateType = permission.validateType;
+          if (
+            validateType === "hasAnyPermi" &&
+            !isArray(permission.permission)
+          ) {
+            throw new BusinessError(
+              BusinessErrorCode.IncorrectPermissionDefined,
+            );
+          }
+
+          validatePermissions = ([] as PermissionTreeNode[]).concat(
+            permission.permission,
+          );
+        } else {
+          validatePermissions = [permission];
+        }
+
+        if (validatePermissions.length < 1)
+          throw new BusinessError(BusinessErrorCode.IncorrectPermissionDefined);
+
+        let validatePass = false;
+        if (validateType === "hasPermi") {
+          /** 验证是否具有xxx权限 */
+          validatePass = await AuthService.hasPermi(
+            user,
+            validatePermissions[0]!.key,
+          );
+
+          /** 验证是否具有系统的账号类型 */
+          if (
+            validatePass &&
+            isArray(validatePermissions[0]!.accountType) &&
+            !validatePermissions[0]!.accountType.includes(
+              user.accountType as AccountType,
+            )
+          ) {
+            validatePass = false;
+          }
+        } else if (validateType === "lacksPermi") {
+          /** 验证是否不具有xxx权限 */
+          validatePass = await AuthService.lacksPermi(
+            user,
+            validatePermissions[0]!.key,
+          );
+        } else if (validateType === "hasAnyPermi") {
+          validatePass = await AuthService.hasAnyPermi(
+            user,
+            validatePermissions.map((i) => i.key),
+          );
+        }
+
+        if (!validatePass) {
           throw new BusinessError(BusinessErrorCode.Forbidden);
         }
       },
 
       async afterResponse({ request, params, query, body, user, ip, set }) {
-        const needsLog = permission !== true && permission.loggable !== false;
-        if (!needsLog || !user) return;
+        if (
+          !(
+            permission !== true &&
+            "loggable" in permission &&
+            permission.loggable !== false
+          ) ||
+          !user
+        )
+          return;
 
         const errorSignal = set.headers["x-error-signal"];
 
@@ -78,7 +151,7 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
           operatorAccount: user.account!,
           operatorName: user.realName!,
           permissionKey: permission.key,
-          permissionName: permission.action || permission.name,
+          permissionName: permission.actionName || permission.name,
           method: request.method,
           path: url.pathname,
           ip: ip,

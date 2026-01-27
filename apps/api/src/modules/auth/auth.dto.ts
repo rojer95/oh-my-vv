@@ -31,3 +31,22 @@ export const ForgetResetPasswordDto = z.object({
   password: z.string().trim().min(1),
   code: z.string(),
 });
+
+export const SendMailCodeDto = z.object({
+  mail: z.email().optional(),
+});
+
+export const BindUnBindMailDto = z.object({
+  mail: z.email(),
+  code: z.string().min(1),
+});
+
+export const ChangePasswordDto = z.object({
+  oldpassword: z.string().min(1),
+  password: z.string().min(6),
+});
+
+export const TotpBindDto = z.object({
+  totpSecret: z.string().optional(),
+  code: z.string().min(6),
+});

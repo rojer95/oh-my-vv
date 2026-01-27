@@ -44,3 +44,5 @@ export type UploadSignResult = {
     fileMaxSize: number;
   };
 };
+
+export type AuthValidateType = "hasPermi" | "lacksPermi" | "hasAnyPermi";

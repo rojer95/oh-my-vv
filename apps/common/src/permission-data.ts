@@ -1,10 +1,13 @@
+import { AccountType } from "./enum";
+
 export interface PermissionTreeNode {
   key: string;
   name: string;
   type: string;
   children?: readonly PermissionTreeNode[];
+  accountType?: readonly AccountType[];
   loggable?: boolean;
-  action?: string;
+  actionName?: string;
 }
 export const PERMISSION_TREE = [
   {
@@ -22,21 +25,25 @@ export const PERMISSION_TREE = [
             name: "查看配置",
             type: "button",
             loggable: false,
+            accountType: [AccountType.platform],
           },
           {
             key: "create",
             name: "新增配置",
             type: "button",
+            accountType: [AccountType.platform],
           },
           {
             key: "update",
             name: "修改配置",
             type: "button",
+            accountType: [AccountType.platform],
           },
           {
             key: "delete",
             name: "删除配置",
             type: "button",
+            accountType: [AccountType.platform],
           },
         ],
       },
