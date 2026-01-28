@@ -288,6 +288,13 @@ export const SystemAccountPage = () => {
                   dataIndex: "role",
                   title: "角色",
                   width: 150,
+                  type: "select",
+                  props: {
+                    labelKey: "name",
+                    valueKey: "id",
+                    multiple: true,
+                    options: options?.roles || [],
+                  },
                 },
                 {
                   dataIndex: "active",

@@ -1,5 +1,10 @@
-import { FULL_KEY_PERMISSION_TREE, PERMISSIONS } from "@rojer/mf-common";
+import {
+  filterPermissionTree,
+  FULL_KEY_PERMISSION_TREE,
+  PERMISSIONS,
+} from "@rojer/mf-common";
 import Elysia from "elysia";
+import { isArray } from "lodash-es";
 import z from "zod";
 import { authPlugin } from "../../lib/auth";
 import { curdPlugin } from "../../lib/curd";
@@ -19,13 +24,27 @@ export const systemRoleController = new Elysia({ name: "systemRole" })
     app
       .get(
         "options",
-        async ({ tenantId }) => {
+        async ({ tenantId, user }) => {
           const departments =
             await SystemDepartmentService.findTreeByTenantId(tenantId);
-          return { permissions: FULL_KEY_PERMISSION_TREE, departments };
+          const accountType = user!.accountType;
+          return {
+            permissions: filterPermissionTree(
+              FULL_KEY_PERMISSION_TREE,
+              (node) => {
+                if (
+                  isArray(node.accountType) &&
+                  !node.accountType.includes(accountType)
+                )
+                  return false;
+                return true;
+              },
+            ),
+            departments,
+          };
         },
         {
-          auth: PERMISSIONS.systemRoleView,
+          auth: { permission: PERMISSIONS.systemRoleView, loggable: false },
         },
       )
       .post(
@@ -34,7 +53,7 @@ export const systemRoleController = new Elysia({ name: "systemRole" })
           return await SystemRoleService.findAndCount(findManyOption);
         },
         {
-          auth: PERMISSIONS.systemRoleView,
+          auth: { permission: PERMISSIONS.systemRoleView, loggable: false },
           findManyOption: true,
         },
       )

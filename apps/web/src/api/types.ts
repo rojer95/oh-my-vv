@@ -149,12 +149,8 @@ type IntegerRange<F extends number, T extends number> = Exclude<
 >;
 
 type SuccessCodeRange = IntegerRange<200, 300>;
-type IsSuccessCode<S extends number> = S extends SuccessCodeRange
-  ? true
-  : false;
 
 type MaybeArray<T> = T | T[];
-type MaybePromise<T> = T | Promise<T>;
 
 type MaybeArrayFile<T> = T extends (File | BunFile)[]
   ? (File | BunFile)[] | File | BunFile

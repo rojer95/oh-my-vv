@@ -1,5 +1,5 @@
-import { PERMISSION_TREE } from "./permission-data";
 import type { PermissionTreeNode } from "./permission-data";
+import { PERMISSION_TREE } from "./permission-data";
 
 function buildFullKey(
   node: Readonly<PermissionTreeNode>,
@@ -32,7 +32,7 @@ function flattenPermissions(
   for (const node of nodes) {
     const fullKey = buildFullKey(node, parentKey);
 
-    if (node.type === "button") {
+    if (!node.children) {
       const camelCaseKey = fullKey
         .split(":")
         .map((part, index) =>
@@ -41,14 +41,33 @@ function flattenPermissions(
         .join("");
 
       result[camelCaseKey] = { ...node, key: fullKey };
-    }
-
-    if (node.children) {
+    } else {
       flattenPermissions(node.children, fullKey, result);
     }
   }
 
   return result;
+}
+
+export function filterPermissionTree(
+  nodes: readonly PermissionTreeNode[],
+  filter: (node: PermissionTreeNode) => boolean,
+): PermissionTreeNode[] {
+  return nodes
+    .map((node) => {
+      return {
+        ...node,
+        children: node.children
+          ? filterPermissionTree(node.children, filter)
+          : undefined,
+      };
+    })
+    .filter((o) => {
+      const filterRes = filter(o);
+      if (filterRes === false) return false;
+      if (o.children?.length === 0) return false;
+      return true;
+    });
 }
 
 export function getPermission(key: string): PermissionTreeNode | undefined {
@@ -89,20 +108,15 @@ type FlattenButtonPermissions<
       [I in keyof T]: T[I] extends {
         key: infer Key extends string;
         children?: infer Children;
-        type?: infer Type extends string;
       }
         ? Children extends readonly {
             key: string;
             children?: any;
           }[]
-          ? Type extends "button"
-            ?
-                | CamelCase<`${ParentKey}${Key}`>
-                | FlattenButtonPermissions<Children, `${ParentKey}${Key}:`>
-            : FlattenButtonPermissions<Children, `${ParentKey}${Key}:`>
-          : Type extends "button"
-            ? CamelCase<`${ParentKey}${Key}`>
-            : never
+          ? // 如果有 children，继续递归
+            FlattenButtonPermissions<Children, `${ParentKey}${Key}:`>
+          : // 如果没有 children，这就是一个权限节点
+            CamelCase<`${ParentKey}${Key}`>
         : never;
     }[number]
   : never;

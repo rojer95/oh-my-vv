@@ -8,5 +8,5 @@ export const noticeController = new Elysia()
       .get("/", () => {
         return [];
       })
-      .post("/readed", () => {}, { auth: true }),
+      .post("/readed", () => {}, { auth: { permission: true } }),
   );

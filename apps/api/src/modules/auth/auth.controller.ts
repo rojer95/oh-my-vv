@@ -97,8 +97,6 @@ export const authController = new Elysia()
             id: user!.id,
           });
 
-          console.log(account);
-
           const profile: ProfileType = {
             id: account.id,
             accountType: account.accountType,

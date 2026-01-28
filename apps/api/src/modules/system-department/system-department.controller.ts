@@ -24,7 +24,10 @@ export const systemDepartmentController = new Elysia({
           return await SystemDepartmentService.findTreeByTenantId(tenantId);
         },
         {
-          auth: PERMISSIONS.systemDepartmentView,
+          auth: {
+            permission: PERMISSIONS.systemDepartmentView,
+            loggable: false,
+          },
         },
       )
       .post(

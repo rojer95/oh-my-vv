@@ -1,4 +1,4 @@
-import { PERMISSIONS } from "@rojer/mf-common";
+import { AccountType, PERMISSIONS } from "@rojer/mf-common";
 import { Elysia } from "elysia";
 import { authPlugin } from "../../lib/auth";
 import { curdPlugin } from "../../lib/curd";
@@ -19,7 +19,10 @@ export const systemConfigController = new Elysia({ name: "systemConfig" })
           return await SystemConfigService.findAndCount(findManyOption);
         },
         {
-          auth: PERMISSIONS.systemConfigView,
+          auth: {
+            permission: PERMISSIONS.systemConfigView,
+            loggable: false,
+          },
           findManyOption: { tenantId: false },
         },
       )

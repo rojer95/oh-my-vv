@@ -37,7 +37,7 @@ export const systemAccountController = new Elysia({ name: "systemAccount" })
           return { roles, departments };
         },
         {
-          auth: PERMISSIONS.systemAccountView,
+          auth: { permission: PERMISSIONS.systemAccountView, loggable: false },
         },
       )
       .post(
@@ -55,7 +55,7 @@ export const systemAccountController = new Elysia({ name: "systemAccount" })
           return await SystemAccountService.findAndCount(findManyOption);
         },
         {
-          auth: PERMISSIONS.systemAccountView,
+          auth: { permission: PERMISSIONS.systemAccountView, loggable: false },
           findManyOption: true,
         },
       )
