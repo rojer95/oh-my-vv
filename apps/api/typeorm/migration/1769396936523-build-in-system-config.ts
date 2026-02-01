@@ -28,6 +28,19 @@ export class BuildInSystemConfig1769396936523 implements MigrationInterface {
         note: "超出重试次数封禁的时间（分钟）",
       })
       .execute();
+
+    await queryRunner.manager
+      .createQueryBuilder()
+      .insert()
+      .into(this.TABLE_NAME)
+      .values({
+        name: "登录有效时间",
+        key: "sys:login:exp",
+        value: "2d",
+        build_in: true,
+        note: "登录后token有效时间，支持 30m 2h 1d 1y 等写法。",
+      })
+      .execute();
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -36,7 +49,7 @@ export class BuildInSystemConfig1769396936523 implements MigrationInterface {
       .delete()
       .from(this.TABLE_NAME)
       .where({
-        key: In(["sys:login:maxFailCount", "sys:login:ttl"]),
+        key: In(["sys:login:maxFailCount", "sys:login:ttl", "sys:login:exp"]),
       });
   }
 }

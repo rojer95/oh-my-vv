@@ -1,9 +1,11 @@
 export const BusinessErrorCode = {
-  Unauthorized: [401, "未经授权的访问"],
+  /** 权限 */
+  Unauthorized: [401, "您还未登录或登录已超时"],
   Forbidden: [403, "访问权限不足"],
   NotFound: [404, "资源不存在"],
   AlreadyExists: [409, "资源已存在"],
   IncorrectPermissionDefined: [500, "错误的权限定义"],
+  SystemIllegal: [500, "非法操作"],
   PasswordTooSimple: [10001, "密码太简单"],
   TryLater: [10002, "操作过于频繁，请{{t}}后再试"],
   LackCaptchaCode: [10003, "请输入验证码"],
@@ -17,17 +19,25 @@ export const BusinessErrorCode = {
   TotpAlreadyBind: [10011, "多重验证已绑定过了"],
   TotpTokenIncorrect: [100012, "多重验证验证码不正确"],
   TotpNotBind: [10013, "多重验证还未绑定过"],
-
-  SystemConfigKeyAlreadyExists: [11001, "参数键名已存在"],
+  /** 配置 */
+  SystemConfigKeyAlreadyExists: [11001, "配置参数键名已存在"],
   SystemConfigBuildInCanNotDelelte: [11002, "系统内置配置不可删除"],
-
+  /** 账户 */
   SystemAccountNotFound: [12001, "账户不存在"],
   SystemAccountAlreadyExists: [12002, "账户已存在"],
+  /** 角色 */
   SystemRoleNotFound: [13001, "角色不存在"],
   SystemRoleAlreadyExists: [13002, "角色已存在"],
+  /** 部门 */
   SystemDepartmentNotFound: [14001, "部门不存在"],
   SystemDepartmentRootCannotDelete: [14002, "总部不能被删除"],
   SystemDepartmentHasChildren: [14003, "部门下有子部门，无法删除"],
   SystemDepartmentRequiredParentId: [14004, "请设置上级部门"],
   SystemDepartmentBadParentId: [14005, "不能将自身及下级设置为上级部门"],
+  /** 上传 */
+  UploadUnsupportType: [15001, "不支持的上传类型"],
+  UploadUnsupportExt: [15002, "不支持的文件名后缀"],
+  UploadUnsupportMime: [15003, "不支持的文件类型"],
+  UploadUnactive: [15004, "上传组件未启用/设置"],
+  UploadMaxsize: [15005, "文件上传上限 {{size}} M"],
 } as const;

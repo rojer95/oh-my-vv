@@ -1,7 +1,6 @@
 import "react";
 import { ActionProps, SchemaColumnBase, SchemaDefined } from "../typing";
 import { ArrayColunm, array } from "./array";
-import { AttachmenntColumn, attachment } from "./attachment";
 import { AutoCompleteColumn, autoComplete } from "./auto-complete";
 import { CascaderColunm, cascader } from "./cascader";
 import { CheckboxColumn, checkbox } from "./checkbox";
@@ -74,7 +73,6 @@ export const defaultColumn = {
   color,
   display,
   polygon,
-  attachment,
   stock,
   ["complex-array"]: complexArray,
   ["tree-select"]: treeSelect,
@@ -133,6 +131,5 @@ export type DefaultSchemaColumn =
   | CheckboxGroupColumn
   | DisplayColumn
   | PolygonColumn
-  | AttachmenntColumn
   | InputGroupColumn
   | SchemaColumnBase<"action", ActionProps>;

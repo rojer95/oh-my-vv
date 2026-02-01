@@ -11,3 +11,6 @@ export const RoleDataPermTypeOptions = [
   { label: "自定义部门", value: RoleDataPermType.custom },
   { label: "仅用户本人数据", value: RoleDataPermType.user },
 ];
+
+export const ADMIN_AUTH_ISSUER = "SYSTEM_ADMIN";
+export const UPLOAD_JWT_ISSUER = "UPLOAD";

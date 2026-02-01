@@ -19,5 +19,8 @@
   "type": "module",
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "resolutions": {
+    "elysia": "^1.4.22"
+  }
 }

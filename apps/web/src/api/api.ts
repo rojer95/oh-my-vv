@@ -3,7 +3,7 @@ import { Toast } from "@douyinfe/semi-ui";
 import { treaty } from "@elysiajs/eden";
 import { STORAGE_AUTH_KEY } from "@rojer/mf-common";
 import type { App } from "../../../api/src/index";
-import { MyEdenTreaty } from "./types";
+import type { MyEdenTreaty } from "./type";
 
 export const treatyApi = treaty<App>(import.meta.env.VITE_API as string, {
   onRequest: () => {

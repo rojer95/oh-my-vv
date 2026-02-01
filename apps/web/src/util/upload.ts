@@ -83,15 +83,10 @@ export const customRequest = async (
   if (!fileInstance) throw new Error(`要上传的文件不存在`);
 
   try {
-    const {
-      data: { host, body, attachment },
-      error,
-    } = await api.api.v1.upload.sign.post({
-      name: fileInstance.name,
-      size: fileInstance.size,
+    const { host, body, attachment } = await api.api.v1.upload.sign.post({
+      filename: fileInstance.name,
+      filesize: fileInstance.size,
     });
-
-    if (error) throw error.value;
 
     if (attachment.fileMaxSize < fileInstance.size) {
       throw new Error(

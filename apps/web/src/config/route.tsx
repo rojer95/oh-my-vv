@@ -8,12 +8,13 @@ import { RouteObject, createHashRouter } from "react-router-dom";
 
 import { PERMISSIONS } from "@rojer/mf-common";
 import { LoginPage } from "../page/login";
+import { ProfileInfoPage } from "../page/profile/info";
 import { DashboardPage } from "../page/statistic/dashboard";
 import { SystemAccountPage } from "../page/system/account";
 import { SystemConfigPage } from "../page/system/config";
+import { UploadConfigPage } from "../page/system/config/upload";
 import { DepartmentPage } from "../page/system/department";
 import { RolePage } from "../page/system/role";
-import { ProfileInfoPage } from "../page/profile/info";
 
 /**
  * 路由handle附加数据定义
@@ -70,13 +71,7 @@ const mainRoute: RouteObject[] = [
         element: <DictPage />,
       },
 
-      {
-        path: "attachment",
-        handle: {
-          menu: "素材库",
-        },
-        element: <AttachmentPage />,
-      },
+     
 
       {
         path: "auth",
@@ -115,12 +110,28 @@ const mainRoute: RouteObject[] = [
    */
 
       {
-        path: "config",
+        path: "setting",
         handle: {
-          menu: "系统配置",
-          access: PERMISSIONS.systemConfigView.key,
+          menu: "配置管理",
         },
-        element: <SystemConfigPage />,
+        children: [
+          {
+            path: "system",
+            handle: {
+              menu: "系统配置",
+              access: PERMISSIONS.systemConfigView.key,
+            },
+            element: <SystemConfigPage />,
+          },
+          {
+            path: "upload",
+            handle: {
+              menu: "上传配置",
+              access: PERMISSIONS.systemUploadView.key,
+            },
+            element: <UploadConfigPage />,
+          },
+        ],
       },
 
       {

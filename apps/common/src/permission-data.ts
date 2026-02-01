@@ -39,6 +39,22 @@ export const PERMISSION_TREE = [
         ],
       },
       {
+        key: "upload",
+        name: "上传配置",
+        children: [
+          {
+            key: "view",
+            name: "查看配置",
+            accountType: [AccountType.platform],
+          },
+          {
+            key: "update",
+            name: "修改配置",
+            accountType: [AccountType.platform],
+          },
+        ],
+      },
+      {
         key: "account",
         name: "账户管理",
         children: [

@@ -1,12 +1,12 @@
 import { bearer } from "@elysiajs/bearer";
-import { jwt } from "@elysiajs/jwt";
 import {
-  AccountType,
+  ADMIN_AUTH_ISSUER,
   AuthValidateType,
   BusinessErrorCode,
   PermissionTreeNode,
 } from "@rojer/mf-common";
 import Elysia from "elysia";
+import jwt from "jsonwebtoken";
 import { isArray, isFinite } from "lodash-es";
 import { JwtPayload } from "../interface";
 import { AuthService } from "../modules/auth/auth.service";
@@ -14,24 +14,29 @@ import { OperationLogService } from "../modules/operation-log/operation-log.serv
 import { SystemAccountService } from "../modules/system-account/system-account.service";
 import { BusinessError } from "./error";
 import { ipPlugin } from "./ip";
+import { jwtPlugin } from "./jwt";
 
 export const authPlugin = new Elysia({ name: "lib_auth" })
   .use(bearer())
   .use(
-    jwt({
-      name: "loginJwt",
-      secret: process.env.JWT_SECRET || "your-secret-key-change-in-production",
+    jwtPlugin({
+      algorithm: process.env.JWT_ALG as jwt.Algorithm,
+      publicKey: process.env.JWT_PUBLIC as jwt.PublicKey,
+      secretOrPrivateKey: process.env.JWT_PRIVATE as
+        | jwt.PrivateKey
+        | jwt.Secret,
     }),
   )
   .use(ipPlugin)
-  .resolve({ as: "global" }, async ({ bearer, loginJwt }) => {
+  .resolve({ as: "global" }, async ({ bearer, jwt }) => {
     if (bearer) {
       try {
-        const payload = (await loginJwt.verify(
+        const payload = (await jwt.decode<JwtPayload>(
           bearer,
+          ADMIN_AUTH_ISSUER,
         )) as unknown as JwtPayload;
 
-        if (!isFinite(payload.userId) || payload.userId <= 0) {
+        if (!payload || !isFinite(payload.userId) || payload.userId <= 0) {
           throw new BusinessError(BusinessErrorCode.Unauthorized);
         }
 
@@ -41,6 +46,7 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
         if (!user.active) throw new BusinessError(BusinessErrorCode.AccountBan);
         return { user };
       } catch (e) {
+        console.error(e);
         if (e instanceof BusinessError) throw e;
         throw new BusinessError(BusinessErrorCode.Unauthorized);
       }
@@ -153,6 +159,7 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
         }
 
         if (
+          !user ||
           mixAuthConfig.loggable === false ||
           mixAuthConfig.permission === true
         )
@@ -178,11 +185,11 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
         const requestData = isSaveRequestData
           ? {
               query:
-                Object.keys(query).length > 0
+                query && Object.keys(query).length > 0
                   ? OperationLogService.sanitizeData(query)
                   : undefined,
               params:
-                Object.keys(params).length > 0
+                params && Object.keys(params).length > 0
                   ? OperationLogService.sanitizeData(params)
                   : undefined,
               body: body ? OperationLogService.sanitizeData(body) : undefined,
@@ -190,9 +197,9 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
           : {};
 
         await OperationLogService.createOperationLog({
-          operatorId: user!.id!,
-          operatorAccount: user!.account!,
-          operatorName: user!.realName!,
+          operatorId: user.id!,
+          operatorAccount: user.account!,
+          operatorName: user.realName!,
           permissionKey: validatePermissions[0]!.key,
           permissionName:
             mixAuthConfig.loggable?.title || validatePermissions[0]!.name,

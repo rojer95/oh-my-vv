@@ -12,3 +12,16 @@ export enum RoleDataPermType {
 export enum AccountType {
   platform = "platform",
 }
+
+export enum UploadType {
+  local = "local",
+  qiniu = "qiniu",
+  oss = "oss",
+  cos = "cos",
+}
+
+export enum FileMime {
+  img = "img",
+  video = "video",
+  audio = "audio",
+}

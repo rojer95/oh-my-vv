@@ -1,9 +1,16 @@
-import { BusinessErrorCode, ProfileType } from "@rojer/mf-common";
+import {
+  ADMIN_AUTH_ISSUER,
+  BusinessErrorCode,
+  ProfileType,
+} from "@rojer/mf-common";
 import { Elysia } from "elysia";
+import type { StringValue } from "ms";
+
 import { authPlugin } from "../../lib/auth";
 import { BusinessError } from "../../lib/error";
 import { CaptchaService } from "../helper/captcha.service";
 import { SystemAccountService } from "../system-account/system-account.service";
+import { SystemConfigService } from "../system-config/system-config.service";
 import {
   BindUnBindMailDto,
   ChangePasswordDto,
@@ -47,7 +54,7 @@ export const authController = new Elysia()
       /** 登录 */
       .post(
         "/login",
-        async ({ body, ip, loginJwt }) => {
+        async ({ body, ip, jwt }) => {
           const systemAccount = await AuthService.login(
             body.account,
             body.password,
@@ -57,11 +64,20 @@ export const authController = new Elysia()
             body.totpToken,
           );
 
+          const exp = await SystemConfigService.getValueByKey<StringValue>(
+            "sys:login:exp",
+            "string",
+            "2d",
+          );
+
           // 生成token
-          const token = await loginJwt.sign({
-            userId: systemAccount.id,
-            exp: "2d",
-          });
+          const token = await jwt.sign(
+            {
+              userId: systemAccount.id,
+            },
+            ADMIN_AUTH_ISSUER,
+            exp,
+          );
 
           return { token };
         },

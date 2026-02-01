@@ -1,5 +1,5 @@
 import "dotenv/config";
-
+import "./lib/dayjs";
 import { cors } from "@elysiajs/cors";
 import { staticPlugin } from "@elysiajs/static";
 import { Elysia } from "elysia";

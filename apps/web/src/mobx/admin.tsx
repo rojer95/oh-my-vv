@@ -15,24 +15,27 @@ class AdminModel {
 
   *autoLogin() {
     this.autoLogining = true;
-    const hasToken = !!(
-      localStorage[STORAGE_AUTH_KEY] || sessionStorage[STORAGE_AUTH_KEY]
-    );
 
-    if (hasToken) {
-      const success: boolean = yield this.loadProfile();
+    try {
+      const hasToken = !!(
+        localStorage[STORAGE_AUTH_KEY] || sessionStorage[STORAGE_AUTH_KEY]
+      );
 
-      // 自动登录成功，跳转到首页
-      if (success && router?.state?.location?.pathname === "/") {
-        router?.navigate?.("/dashboard", { replace: true });
+      if (hasToken) {
+        const success: boolean = yield this.loadProfile();
+
+        // 自动登录成功，跳转到首页
+        if (success && router?.state?.location?.pathname === "/") {
+          router?.navigate?.("/dashboard", { replace: true });
+        }
       }
-    }
 
-    if (router?.state?.location?.pathname !== "/" && !this.logined) {
-      router?.navigate?.("/", { replace: true });
+      if (router?.state?.location?.pathname !== "/" && !this.logined) {
+        router?.navigate?.("/", { replace: true });
+      }
+    } finally {
+      this.autoLogining = false;
     }
-
-    this.autoLogining = false;
   }
 
   *loadProfile() {

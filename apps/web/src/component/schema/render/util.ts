@@ -8,7 +8,7 @@ import { SchemaColumn, SchemaFormState } from "../typing";
 
 export const generateType = (
   state: SchemaFormState,
-  column: SchemaColumn
+  column: SchemaColumn,
 ): string | boolean => {
   //  console.log("generateType", column?.dataIndex);
   if (typeof column?.type === "function") {
@@ -19,7 +19,7 @@ export const generateType = (
 
 export const generateTitle = (
   state: SchemaFormState,
-  column: SchemaColumn
+  column: SchemaColumn,
 ): React.ReactNode => {
   if (typeof column?.title === "function") {
     return column?.title(state);
@@ -31,7 +31,7 @@ export const generateProps = (
   state: SchemaFormState,
   column: SchemaColumn,
   title: React.ReactNode,
-  type: string | boolean
+  type: string | boolean,
 ): Record<string, any> => {
   let props: any = {};
   if (typeof column?.props === "function") {
@@ -48,7 +48,7 @@ export const generateProps = (
     array: "array",
   }[type as string];
 
-  if (type === "attachment" && props?.dataType !== "string") {
+  if (type === "upload" && props?.dataType !== "string") {
     ruleType = "array";
   }
 
@@ -73,7 +73,7 @@ export const generateRule = (
   state: SchemaFormState,
   column: SchemaColumn,
   title: React.ReactNode,
-  ruleType: string
+  ruleType: string,
 ): Array<RuleItem> => {
   if (!column) return [];
 
@@ -140,7 +140,7 @@ export const generateRule = (
 
 export const generateHidden = (
   state: SchemaFormState,
-  column: SchemaColumn
+  column: SchemaColumn,
 ): boolean => {
   if (typeof column?.hiddenInForm === "function") {
     return column?.hiddenInForm(state);

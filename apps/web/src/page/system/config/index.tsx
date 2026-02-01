@@ -82,9 +82,13 @@ export const SystemConfigPage = () => {
             dataIndex: "note",
             title: "备注",
             type: "textarea",
-            props: {
-              rows: 2,
-              maxLength: 512,
+            deps: ["buildIn"],
+            props: ({ values }) => {
+              return {
+                rows: 2,
+                maxLength: 512,
+                disabled: values.buildIn === true,
+              };
             },
           },
         ]}

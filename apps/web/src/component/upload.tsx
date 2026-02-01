@@ -10,6 +10,7 @@ import {
 } from "@douyinfe/semi-ui/lib/es/upload";
 import { useEffect, useMemo, useState } from "react";
 import { v4 } from "uuid";
+import { isPlainObject, pick } from "lodash-es";
 
 const DefaultChildren = (
   <Button icon={<IconUpload />} theme="light">
@@ -17,33 +18,9 @@ const DefaultChildren = (
   </Button>
 );
 
-const value2list = (value: any): FileItem[] => {
-  if (Array.isArray(value)) {
-    return value.map((i) => ({
-      uid: v4(),
-      url: i,
-      status: "success",
-      name: "",
-      size: "",
-    }));
-  }
-
-  if (typeof value === "string" && value) {
-    return [
-      {
-        uid: v4(),
-        url: value,
-        status: "success",
-        name: "",
-        size: "",
-      },
-    ];
-  }
-  return [];
-};
-
 const urlGetter = (i: any) => {
   if (
+    i?.response &&
     typeof i?.response?.url === "string" &&
     i?.response?.url?.indexOf("//") !== -1
   ) {
@@ -52,14 +29,53 @@ const urlGetter = (i: any) => {
   return i.url;
 };
 
+const value2list = (value: any): FileItem[] => {
+  if (Array.isArray(value)) {
+    return value.map((i) => ({
+      uid: i?.uid || v4(),
+      url: i?.url,
+      name: i?.name,
+      size: i?.size,
+      status: "success",
+    }));
+  }
+
+  if (isPlainObject(value) && value) {
+    return [
+      {
+        uid: value?.uid || v4(),
+        url: value?.url,
+        name: value?.name,
+        size: value?.size,
+        status: "success",
+      },
+    ];
+  }
+
+  return [];
+};
+
 const list2value = (list: any, multiple: boolean) => {
   const successList = list.filter((i: any) => i.status === "success");
   if (multiple) {
-    return successList.map(urlGetter);
+    return successList.map((i: any) =>
+      pick(
+        {
+          ...i,
+          url: urlGetter(i),
+        },
+        ["uid", "url", "name", "size"],
+      ),
+    );
   }
 
   if (successList.length === 0) return undefined;
-  return urlGetter(successList[0]);
+  return pick({ ...successList[0], url: urlGetter(successList[0]) }, [
+    "uid",
+    "url",
+    "name",
+    "size",
+  ]);
 };
 
 export type UploadProps = Omit<SemiUploadProps, "action"> & {
@@ -112,7 +128,7 @@ export const Upload = ({
 
     if (
       changeList.some((i: any) =>
-        ["validating", "uploading", "wait"].includes(i.status)
+        ["validating", "uploading", "wait"].includes(i.status),
       )
     ) {
       return;

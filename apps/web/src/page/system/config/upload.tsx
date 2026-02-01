@@ -1,11 +1,11 @@
+import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SpinBox } from "@/component/spin-box";
 import { Card, Toast } from "@douyinfe/semi-ui";
 import { useRequest } from "ahooks";
-import { api } from "../../../api";
 
-export const SettingUploadPage = () => {
-  const { data, loading, refresh } = useRequest(api.v1.upload.getSetting);
+export const UploadConfigPage = () => {
+  const { data, loading, refresh } = useRequest(api.api.v1.upload.setting.get);
 
   return (
     <Card>
@@ -15,7 +15,7 @@ export const SettingUploadPage = () => {
         <SchemaForm
           initValues={data}
           onSubmit={async (value) => {
-            await api.v1.upload.saveSetting(value);
+            await api.api.v1.upload.setting.put(value);
             Toast.success("修改成功");
             refresh();
           }}
@@ -180,7 +180,7 @@ export const SettingUploadPage = () => {
                   title: "Bucket",
                   required: true,
                   props: {
-                    extraText: "需要在腾讯云配置允许跨域上传",
+                    extraText: "需要在阿里云配置允许跨域上传",
                   },
                 },
                 {
@@ -244,6 +244,27 @@ export const SettingUploadPage = () => {
                   title: "前缀",
                   props: {
                     extraText: "需以/结尾，例如 img/",
+                  },
+                },
+              ],
+            },
+
+            {
+              type: "section",
+              title: "测试上传",
+              columns: [
+                {
+                  dataIndex: "tests",
+                  type: "file",
+                  title: "多文件",
+                  props: {},
+                },
+                {
+                  dataIndex: "test",
+                  type: "file",
+                  title: "单文件",
+                  props: {
+                    multiple: false,
                   },
                 },
               ],
