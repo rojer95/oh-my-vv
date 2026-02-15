@@ -135,7 +135,7 @@ export const authController = new Elysia()
             throw new BusinessError(BusinessErrorCode.AccountNotBindMain);
 
           return await AuthService.sendCodeToMail(
-            user!.id!,
+            user!.id,
             mail,
             user?.mail ? "解绑邮箱" : "绑定邮箱",
           );
@@ -151,7 +151,7 @@ export const authController = new Elysia()
           const targetMail = isUnBind ? "" : body.mail;
 
           return await AuthService.checkCodeAndChangeMail(
-            user!.id!,
+            user!.id,
             isUnBind ? body.mail : targetMail,
             body.code,
             targetMail,
@@ -163,7 +163,7 @@ export const authController = new Elysia()
       .put(
         "/password",
         async ({ user, body }) => {
-          const accountId = user!.id!;
+          const accountId = user!.id;
 
           const account = await SystemAccountService.findOneWithSecretBy({
             id: accountId,
@@ -193,7 +193,7 @@ export const authController = new Elysia()
       .put(
         "/totp",
         async ({ user, body }) => {
-          const accountId = user!.id!;
+          const accountId = user!.id;
 
           const account = await SystemAccountService.findOneWithSecretBy({
             id: accountId,
@@ -206,12 +206,12 @@ export const authController = new Elysia()
               throw new BusinessError(BusinessErrorCode.TotpTokenIncorrect);
 
             return await AuthService.bindTotp(
-              user!.id!,
+              user!.id,
               body.totpSecret,
               body.code,
             );
           } else {
-            return await AuthService.unbindTotp(user!.id!, body.code);
+            return await AuthService.unbindTotp(user!.id, body.code);
           }
         },
         { auth: true, body: TotpBindDto },

@@ -1,20 +1,13 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
-import { isFinite, pick, uniq } from "lodash-es";
-import {
-  EntityTarget,
-  FindOneOptions,
-  IsNull,
-  ObjectLiteral,
-  TreeRepositoryNotSupportedError,
-  type FindOptionsWhere,
-} from "typeorm";
+import { pick, uniq } from "lodash-es";
+import { IsNull, type FindOptionsWhere } from "typeorm";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
-import { SystemDepartment } from "./system-department.entity";
 import {
   SortableTreeRepository,
   sortableTreeRepositoryMethods,
 } from "../../lib/typeorm/sortable-tree.repository";
+import { SystemDepartment } from "./system-department.entity";
 
 export abstract class SystemDepartmentService {
   static get repo() {
@@ -31,10 +24,7 @@ export abstract class SystemDepartmentService {
     where: FindOptionsWhere<SystemDepartment>,
   ) {
     const department = await this.repo.findOneByOrFail(where);
-    console.log("department", department);
     const childrens = await this.treeRepo.findDescendants(department);
-    console.log("childrens", childrens);
-
     return uniq([department.id, ...childrens.map((i) => i.id)]);
   }
 
@@ -67,6 +57,10 @@ export abstract class SystemDepartmentService {
 
       return [rootTree];
     });
+  }
+
+  static async findBy(where: FindOptionsWhere<SystemDepartment>) {
+    return await this.repo.findBy(where);
   }
 
   static async findOneBy(where: FindOptionsWhere<SystemDepartment>) {

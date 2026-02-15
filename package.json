@@ -10,7 +10,7 @@
   "scripts": {
     "dev:api": "bun --filter @rojer/mf-api dev",
     "dev:web": "bun --filter @rojer/mf-web dev",
-    "dev": "bun --console-depth 5 --elide-lines 0 --filter \"*\" dev",
+    "dev": "bun --console-depth 5 --elide-lines 0 --stream --filter \"*\" dev",
     "clean": "rm -rf node_modules **/node_modules **/dist",
     "db:add": "bun --filter @rojer/mf-api db:add",
     "db:build": "bun --filter @rojer/mf-api db:build",
@@ -21,6 +21,6 @@
     "apps/*"
   ],
   "resolutions": {
-    "elysia": "^1.4.22"
+    "elysia": "^1.4.25"
   }
 }

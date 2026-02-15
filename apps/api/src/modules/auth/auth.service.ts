@@ -2,10 +2,12 @@ import {
   BusinessErrorCode,
   PASSWORD_PATTERN,
   PERMISSIONS,
+  RoleDataPermType,
 } from "@rojer/mf-common";
 import * as bcrypt from "bcryptjs";
-import { isArray } from "lodash-es";
-import { In } from "typeorm";
+import { isArray, uniq } from "lodash-es";
+import { FindOperator, In } from "typeorm";
+import { AuthValidateResult } from "../../lib/auth";
 import { BusinessError } from "../../lib/error";
 import { logger } from "../../lib/logger";
 import { redis } from "../../lib/redis";
@@ -14,9 +16,10 @@ import { mailQueue } from "../../queue/mail.queue";
 import { CaptchaService } from "../helper/captcha.service";
 import { TotpService } from "../helper/totp.service";
 import { SystemAccount } from "../system-account/system-account.entity";
-import { SystemConfigService } from "../system-config/system-config.service";
-import { SystemRole } from "../system-role/system-role.entity";
 import { SystemAccountService } from "../system-account/system-account.service";
+import { SystemConfigService } from "../system-config/system-config.service";
+import { SystemDepartmentService } from "../system-department/system-department.service";
+import { SystemRole } from "../system-role/system-role.entity";
 
 export abstract class AuthService {
   static salt = 10;
@@ -152,6 +155,20 @@ export abstract class AuthService {
   }
 
   /**
+   * 根据用户获取用户全部角色
+   * @param user
+   * @returns
+   */
+  static async getRolesByUser(user: SystemAccount) {
+    return await AppDataSource.getRepository(SystemRole).find({
+      where: {
+        id: In(user.role || []),
+        active: true,
+      },
+    });
+  }
+
+  /**
    * 根据用户获取用户全部权限
    * @param user
    * @returns
@@ -166,12 +183,7 @@ export abstract class AuthService {
 
     if (user.isSuper) return AllPermissionByAccountType.map((i) => i.key);
 
-    const roles = await AppDataSource.getRepository(SystemRole).find({
-      where: {
-        id: In(user.role),
-        active: true,
-      },
-    });
+    const roles = await this.getRolesByUser(user);
 
     const allPermissions = new Set<string>();
 
@@ -189,45 +201,132 @@ export abstract class AuthService {
   }
 
   /**
-   * 验证用户是否具备某权限
+   * 根据角色输出部门范围id与用户范围id，undefined 代表不限制范围
+   * @param matchRoles
    * @param user
-   * @param permissionKey
    * @returns
    */
-  static async hasPermi(
+  static async getDataRangeConditionByMatchRoles(
+    matchRoles: Array<SystemRole>,
     user: SystemAccount,
-    permissionKey: string,
-  ): Promise<boolean> {
-    if (user.isSuper) {
-      return true;
+  ): Promise<{
+    dataDeptIds: FindOperator<number> | undefined;
+    dataUserIds: FindOperator<number> | undefined;
+  }> {
+    let dataDeptIds: Array<number> | undefined = undefined;
+    let dataUserIds: Array<number> | undefined = undefined;
+
+    const departmentIds = await SystemDepartmentService.findSelfAndChildTreeIds(
+      {
+        id: user.departmentId,
+        tenantId: user.tenantId,
+      },
+    );
+
+    if (matchRoles.every((r) => r.dataPermType !== RoleDataPermType.all)) {
+      for (const matchRole of matchRoles) {
+        // 用户所在部门
+        if (matchRole.dataPermType === RoleDataPermType.department) {
+          if (!dataDeptIds) dataDeptIds = [];
+          dataDeptIds.push(user.departmentId);
+        }
+
+        // 用户所在及以下部门
+        if (matchRole.dataPermType === RoleDataPermType.departments) {
+          if (!dataDeptIds) dataDeptIds = [];
+          dataDeptIds.push(...departmentIds);
+        }
+
+        // 自定义部门
+        if (matchRole.dataPermType === RoleDataPermType.custom) {
+          if (!dataDeptIds) dataDeptIds = [];
+          dataDeptIds.push(...(matchRole.department || []));
+        }
+
+        // 仅用户本人数据
+        if (matchRole.dataPermType === RoleDataPermType.user) {
+          if (!dataUserIds) dataUserIds = [];
+          dataUserIds.push(user.id);
+        }
+      }
     }
-    const allPermissions = await this.getPermissionsByUser(user);
-    return allPermissions.includes(permissionKey);
+
+    return {
+      dataDeptIds: dataDeptIds ? In(uniq(dataDeptIds)) : undefined,
+      dataUserIds: dataUserIds ? In(uniq(dataUserIds)) : undefined,
+    };
   }
 
   /**
-   * 验证用户是否不具备某权限，与 hasPermi逻辑相反
-   * @param user
-   * @param permissionKey
-   */
-  static async lacksPermi(user: SystemAccount, permissionKey: string) {
-    return !(await this.hasPermi(user, permissionKey));
-  }
-
-  /**
-   * 验证用户是否具有以下任意一个权限
+   * 验证用户是否具有以下任意一个权限，并输出数据权限范围
    * @param user
    * @param permissionKeys
    * @returns
    */
-  static async hasAnyPermi(user: SystemAccount, permissionKeys: string[]) {
+  static async hasAnyPermi(
+    user: SystemAccount,
+    permissionKeys: string[],
+  ): Promise<AuthValidateResult> {
     if (user.isSuper) {
-      return true;
+      return { pass: true, isSuper: true };
     }
-    const allPermissions = await this.getPermissionsByUser(user);
-    return permissionKeys.some((permissionKey) =>
-      allPermissions.includes(permissionKey),
-    );
+
+    const roles = await this.getRolesByUser(user);
+    const matchRoles: Array<SystemRole> = [];
+
+    for (const role of roles) {
+      if (!isArray(role.menuPerm) || role.menuPerm.length === 0) continue;
+      for (const permissionKey of permissionKeys) {
+        if (role.menuPerm.includes(permissionKey)) {
+          matchRoles.push(role);
+          break;
+        }
+      }
+    }
+
+    const { dataDeptIds, dataUserIds } =
+      await this.getDataRangeConditionByMatchRoles(matchRoles, user);
+
+    return {
+      pass: matchRoles.length > 0,
+      isSuper: false,
+      dataDeptIds,
+      dataUserIds,
+    };
+  }
+
+  /**
+   * 验证用户是否不具备某权限，并输出数据权限范围（与 hasPermi逻辑相反）
+   * @param user
+   * @param permissionKey
+   */
+  static async lacksPermi(
+    user: SystemAccount,
+    permissionKey: string,
+  ): Promise<AuthValidateResult> {
+    if (user.isSuper) {
+      return { pass: true, isSuper: true };
+    }
+
+    const roles = await this.getRolesByUser(user);
+    const matchRoles: Array<SystemRole> = [];
+
+    for (const role of roles) {
+      if (!isArray(role.menuPerm) || role.menuPerm.length === 0) continue;
+      if (!role.menuPerm.includes(permissionKey)) {
+        matchRoles.push(role);
+      }
+    }
+
+    const { dataDeptIds, dataUserIds } =
+      await this.getDataRangeConditionByMatchRoles(matchRoles, user);
+
+    return {
+      pass: matchRoles.length > 0,
+      isSuper: false,
+      dataDeptIds,
+      dataUserIds,
+    };
   }
 
   /**

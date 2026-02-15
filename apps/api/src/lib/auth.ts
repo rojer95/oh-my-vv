@@ -12,9 +12,52 @@ import { JwtPayload } from "../interface";
 import { AuthService } from "../modules/auth/auth.service";
 import { OperationLogService } from "../modules/operation-log/operation-log.service";
 import { SystemAccountService } from "../modules/system-account/system-account.service";
+import { SystemRole } from "../modules/system-role/system-role.entity";
 import { BusinessError } from "./error";
 import { ipPlugin } from "./ip";
 import { jwtPlugin } from "./jwt";
+import { FindOperator } from "typeorm";
+
+type AuthConfig =
+  | {
+      validateType?: AuthValidateType;
+      permission?: PermissionTreeNode | PermissionTreeNode[] | true;
+      loggable?: false | { title?: string; isSaveRequestData?: boolean };
+    }
+  | (PermissionTreeNode | PermissionTreeNode[] | true);
+
+type MixAuthConfig = {
+  validateType?: AuthValidateType;
+  permission?: PermissionTreeNode | PermissionTreeNode[] | true;
+  loggable?: false | { title?: string; isSaveRequestData?: boolean };
+};
+
+export type AuthValidateResult = {
+  pass: boolean;
+  isSuper: boolean;
+  dataDeptIds?: FindOperator<number>;
+  dataUserIds?: FindOperator<number>;
+};
+
+const getMixAuthConfigFromConfig = (authCofnig: AuthConfig): MixAuthConfig => {
+  let mixAuthConfig: MixAuthConfig = {};
+
+  if (authCofnig === true) {
+    mixAuthConfig = { permission: true };
+  } else if (isArray(authCofnig)) {
+    mixAuthConfig = {
+      permission: authCofnig,
+    };
+  } else if ("key" in authCofnig) {
+    mixAuthConfig = {
+      permission: authCofnig,
+    };
+  } else {
+    mixAuthConfig = authCofnig;
+  }
+
+  return mixAuthConfig;
+};
 
 export const authPlugin = new Elysia({ name: "lib_auth" })
   .use(bearer())
@@ -54,39 +97,13 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
     return { user: null };
   })
   .macro({
-    auth: (
-      authCofnig:
-        | {
-            validateType?: AuthValidateType;
-            permission?: PermissionTreeNode | PermissionTreeNode[] | true;
-            loggable?: false | { title?: string; isSaveRequestData?: boolean };
-          }
-        | (PermissionTreeNode | PermissionTreeNode[] | true),
-    ) => ({
-      async beforeHandle({ user }) {
+    auth: (authConfig: AuthConfig) => ({
+      resolve: async ({ user }) => {
         if (!user) {
           throw new BusinessError(BusinessErrorCode.Unauthorized);
         }
 
-        let mixAuthConfig: {
-          validateType?: AuthValidateType;
-          permission?: PermissionTreeNode | PermissionTreeNode[] | true;
-          loggable?: false | { title?: string; isSaveRequestData?: boolean };
-        } = {};
-
-        if (authCofnig === true) {
-          mixAuthConfig = { permission: true };
-        } else if (isArray(authCofnig)) {
-          mixAuthConfig = {
-            permission: authCofnig,
-          };
-        } else if ("key" in authCofnig) {
-          mixAuthConfig = {
-            permission: authCofnig,
-          };
-        } else {
-          mixAuthConfig = authCofnig;
-        }
+        const mixAuthConfig = getMixAuthConfigFromConfig(authConfig);
 
         // true, 只需要验证登录状态
         if (mixAuthConfig.permission === true) return;
@@ -96,33 +113,33 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
 
         const validatePermissions: PermissionTreeNode[] = (
           [] as PermissionTreeNode[]
-        ).concat(mixAuthConfig.permission || []);
+        )
+          .concat(mixAuthConfig.permission || [])
+          .slice(0, validateType === "hasAnyPermi" ? undefined : 1);
 
         if (validatePermissions.length < 1)
           throw new BusinessError(BusinessErrorCode.IncorrectPermissionDefined);
 
-        let validatePass = false;
+        let validateResult: AuthValidateResult = {
+          pass: false,
+          isSuper: false,
+        };
 
-        if (validateType === "hasPermi") {
-          /** 验证是否具有xxx权限 */
-          validatePass = await AuthService.hasPermi(
-            user,
-            validatePermissions[0]!.key,
-          );
-        } else if (validateType === "lacksPermi") {
+        if (validateType === "lacksPermi") {
           /** 验证是否不具有xxx权限 */
-          validatePass = await AuthService.lacksPermi(
+          validateResult = await AuthService.lacksPermi(
             user,
             validatePermissions[0]!.key,
           );
-        } else if (validateType === "hasAnyPermi") {
-          validatePass = await AuthService.hasAnyPermi(
+        } else {
+          /** 验证包含其中一个权限 */
+          validateResult = await AuthService.hasAnyPermi(
             user,
             validatePermissions.map((i) => i.key),
           );
         }
 
-        if (!validatePass) {
+        if (!validateResult.pass) {
           throw new BusinessError(BusinessErrorCode.Forbidden);
         }
 
@@ -135,28 +152,12 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
             throw new BusinessError(BusinessErrorCode.Forbidden);
           }
         }
+
+        return validateResult;
       },
 
       async afterResponse({ request, params, query, body, user, ip, set }) {
-        let mixAuthConfig: {
-          validateType?: AuthValidateType;
-          permission?: PermissionTreeNode | PermissionTreeNode[] | true;
-          loggable?: false | { title?: string; isSaveRequestData?: boolean };
-        } = {};
-
-        if (authCofnig === true) {
-          mixAuthConfig = { permission: true };
-        } else if (isArray(authCofnig)) {
-          mixAuthConfig = {
-            permission: authCofnig,
-          };
-        } else if ("key" in authCofnig) {
-          mixAuthConfig = {
-            permission: authCofnig,
-          };
-        } else {
-          mixAuthConfig = authCofnig;
-        }
+        const mixAuthConfig = getMixAuthConfigFromConfig(authConfig);
 
         if (
           !user ||
@@ -197,9 +198,9 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
           : {};
 
         await OperationLogService.createOperationLog({
-          operatorId: user.id!,
-          operatorAccount: user.account!,
-          operatorName: user.realName!,
+          operatorId: user.id,
+          operatorAccount: user.account,
+          operatorName: user.realName,
           permissionKey: validatePermissions[0]!.key,
           permissionName:
             mixAuthConfig.loggable?.title || validatePermissions[0]!.name,
