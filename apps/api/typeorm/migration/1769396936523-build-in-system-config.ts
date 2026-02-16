@@ -50,6 +50,7 @@ export class BuildInSystemConfig1769396936523 implements MigrationInterface {
       .from(this.TABLE_NAME)
       .where({
         key: In(["sys:login:maxFailCount", "sys:login:ttl", "sys:login:exp"]),
-      });
+      })
+      .execute();
   }
 }

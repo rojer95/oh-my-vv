@@ -22,6 +22,7 @@ export const BusinessErrorCode = {
   /** 配置 */
   SystemConfigKeyAlreadyExists: [11001, "配置参数键名已存在"],
   SystemConfigBuildInCanNotDelelte: [11002, "系统内置配置不可删除"],
+  SystemConfigSmtpError: [11003, "邮箱SMTP未配置/错误"],
   /** 账户 */
   SystemAccountNotFound: [12001, "账户不存在"],
   SystemAccountAlreadyExists: [12002, "账户已存在"],

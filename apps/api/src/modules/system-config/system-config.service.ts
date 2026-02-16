@@ -1,6 +1,6 @@
 import { BusinessErrorCode } from "@rojer/mf-common";
 import { pick } from "lodash-es";
-import { FindManyOptions, FindOptionsWhere } from "typeorm";
+import { FindManyOptions, FindOptionsWhere, Like } from "typeorm";
 import { BusinessError } from "../../lib/error";
 import { AppDataSource } from "../../lib/typeorm";
 import { SystemConfig } from "./system-config.entity";
@@ -38,6 +38,13 @@ export abstract class SystemConfigService {
       }
     }
     return defaultValue;
+  }
+
+  static async getValueByKeyPrefix(key: string) {
+    const configs = await this.repo.find({ where: { key: Like(`${key}:%`) } });
+    return configs.reduce((pre, item) => {
+      return { ...pre, [item.key.replace(`${key}:`, "")]: item.value };
+    }, {});
   }
 
   static async create(data: Partial<SystemConfig>) {

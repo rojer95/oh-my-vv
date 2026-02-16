@@ -1,32 +1,43 @@
 import { Worker } from "bullmq";
+import { BusinessError } from "../lib/error";
 import { logger } from "../lib/logger";
-import { queueRedis } from "../lib/redis";
+import { bullMqConfig } from "../lib/redis";
+import { MailService } from "../modules/mail/mail.service";
 
-const QueueName = "mail";
+export type SendMailQueueArgs = {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+};
+
+export const QueueName = "mail";
 const LogName = "MailQueue";
 
-const worker = new Worker(
+const worker = new Worker<SendMailQueueArgs>(
   QueueName,
   async (job) => {
-    logger.info(`[Thread] 正在处理任务: ${job.id}`, {
-      context: LogName,
-    });
-
-    if (job.name === "send") {
-      logger.info(`发送邮件：${JSON.stringify(job.data)}`, {
-        context: LogName,
-      });
+    try {
+      if (job.name === "send") {
+        logger.info(`发送邮件：${JSON.stringify(job.data)}`, {
+          context: LogName,
+        });
+        await MailService.processSend(
+          job.data.to,
+          job.data.subject,
+          job.data.text,
+          job.data.html,
+        );
+      }
+    } catch (error) {
+      if (!(error instanceof BusinessError)) {
+        logger.error("发送邮件失败", error);
+        throw error;
+      }
     }
-
-    logger.info(`[Thread] 任务 ${job.id} 处理完毕`, {
-      context: LogName,
-    });
   },
   {
-    connection: queueRedis,
-    prefix: [process.env.REDIS_PREFIX || "", "bullmq"]
-      .filter((i) => !!i)
-      .join(":"),
+    ...bullMqConfig,
     removeOnComplete: { count: 0 },
   },
 );

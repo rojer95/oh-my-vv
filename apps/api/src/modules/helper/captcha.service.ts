@@ -348,7 +348,7 @@ export abstract class CaptchaService {
       }
       return storedValue.extra;
     } catch (error) {
-      logger.error(error);
+      logger.error("验证码验证并删除失败", error);
       return false;
     }
   }
@@ -398,7 +398,7 @@ export abstract class CaptchaService {
       await redis.del(timeKey);
       return storedValue.extra;
     } catch (error) {
-      logger.error(error);
+      logger.error("验证码验证次数失败", error);
       return false;
     }
   }

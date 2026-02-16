@@ -20,4 +20,11 @@ export const redisQueueConnection: RedisOptions = {
   maxRetriesPerRequest: null,
 };
 
-export const queueRedis = new Redis(redisQueueConnection);
+const queueRedis = new Redis(redisQueueConnection);
+
+export const bullMqConfig = {
+  connection: queueRedis,
+  prefix: [process.env.REDIS_PREFIX || "", "bullmq"]
+    .filter((i) => !!i)
+    .join(":"),
+};

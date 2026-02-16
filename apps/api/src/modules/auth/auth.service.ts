@@ -12,9 +12,9 @@ import { BusinessError } from "../../lib/error";
 import { logger } from "../../lib/logger";
 import { redis } from "../../lib/redis";
 import { AppDataSource } from "../../lib/typeorm";
-import { mailQueue } from "../../queue/mail.queue";
 import { CaptchaService } from "../helper/captcha.service";
 import { TotpService } from "../helper/totp.service";
+import { MailService } from "../mail/mail.service";
 import { SystemAccount } from "../system-account/system-account.entity";
 import { SystemAccountService } from "../system-account/system-account.service";
 import { SystemConfigService } from "../system-config/system-config.service";
@@ -450,13 +450,11 @@ export abstract class AuthService {
       id: `admin-forget.${admin.mail}`,
     });
 
-    await mailQueue.add("send", {
-      data: {
-        to: admin.mail,
-        subject: "找回您的密码",
-        text: `您的验证码为：${text} （五分钟有效）`,
-      },
-    });
+    await MailService.send(
+      admin.mail,
+      "找回您的密码",
+      `您的验证码为：${text} （五分钟有效）`,
+    );
   }
 
   /**
@@ -509,13 +507,7 @@ export abstract class AuthService {
       },
     });
 
-    await mailQueue.add("send", {
-      data: {
-        to: mail,
-        subject: title,
-        text: `您的验证码为：${text} （五分钟有效）`,
-      },
-    });
+    await MailService.send(mail, title, `您的验证码为：${text} （五分钟有效）`);
   }
 
   /**

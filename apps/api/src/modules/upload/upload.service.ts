@@ -387,8 +387,7 @@ export abstract class UploadService {
 
       return { ok: 1 };
     } catch (error) {
-      logger.error((error as Error).message);
-      logger.error((error as Error).stack);
+      logger.error("保存本地文件失败", error);
       throw new BusinessError(BusinessErrorCode.SystemIllegal);
     }
   }

@@ -8,15 +8,14 @@ import {
 import Elysia from "elysia";
 import jwt from "jsonwebtoken";
 import { isArray, isFinite } from "lodash-es";
+import { FindOperator } from "typeorm";
 import { JwtPayload } from "../interface";
 import { AuthService } from "../modules/auth/auth.service";
 import { OperationLogService } from "../modules/operation-log/operation-log.service";
 import { SystemAccountService } from "../modules/system-account/system-account.service";
-import { SystemRole } from "../modules/system-role/system-role.entity";
 import { BusinessError } from "./error";
 import { ipPlugin } from "./ip";
 import { jwtPlugin } from "./jwt";
-import { FindOperator } from "typeorm";
 
 type AuthConfig =
   | {

@@ -6,7 +6,7 @@ import { Elysia } from "elysia";
 import z from "zod";
 import { errorPlugin } from "./lib/error";
 import { loggerPlugin } from "./lib/logger";
-import { queueWorkerPlugin } from "./lib/queue-worker";
+import { bullmqPlugin } from "./lib/bullmq";
 import { responsePlugin } from "./lib/response";
 import { typeormPlugin } from "./lib/typeorm";
 import { allRoutes } from "./route";
@@ -20,7 +20,7 @@ const app = new Elysia()
   .use(loggerPlugin())
   .use(cors())
   .use(responsePlugin())
-  .use(queueWorkerPlugin({ workers: ["mail"] }))
+  .use(bullmqPlugin({ workers: ["mail"] }))
   .use(allRoutes)
   .listen(3000);
 

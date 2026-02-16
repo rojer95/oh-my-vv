@@ -1,10 +1,10 @@
+import Elysia from "elysia";
+import safeStringify from "fast-safe-stringify";
+import { Format } from "logform";
+import path from "path";
+import { inspect } from "util";
 import winston from "winston";
 import "winston-daily-rotate-file";
-import path from "path";
-import { Format } from "logform";
-import safeStringify from "fast-safe-stringify";
-import { inspect } from "util";
-import Elysia from "elysia";
 
 const clc = {
   bold: (text: string) => `\x1B[1m${text}\x1B[0m`,
