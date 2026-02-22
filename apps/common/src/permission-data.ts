@@ -178,6 +178,18 @@ export const PERMISSION_TREE = [
           },
         ],
       },
+
+      {
+        key: "oplog",
+        name: "操作日志",
+        children: [
+          {
+            key: "view",
+            name: "查看日志",
+            accountType: [AccountType.platform],
+          },
+        ],
+      },
     ],
   },
 ] as const;

@@ -1,9 +1,18 @@
 import { isPlainObject } from "lodash-es";
-import { SystemOperationLog } from "./system-operation-log.entity";
+import { FindManyOptions } from "typeorm";
 import { logger } from "../../lib/logger";
 import { AppDataSource } from "../../lib/typeorm";
+import { SystemOperationLog } from "./system-operation-log.entity";
 
-export abstract class OperationLogService {
+export abstract class SystemOperationLogService {
+  static get repo() {
+    return AppDataSource.getRepository(SystemOperationLog);
+  }
+
+  static async findAndCount(options: FindManyOptions<SystemOperationLog>) {
+    return await this.repo.findAndCount(options);
+  }
+
   /**
    * 日志数据脱敏
    * @param data
@@ -58,8 +67,7 @@ export abstract class OperationLogService {
     errorMessage?: string;
   }): Promise<void> {
     try {
-      const logRepository = AppDataSource.getRepository(SystemOperationLog);
-      await logRepository.save({
+      await this.repo.save({
         ...options,
         tenantId: 1,
       });

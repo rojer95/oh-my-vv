@@ -6,6 +6,7 @@ import { systemConfigController } from "./modules/system-config/system-config.co
 import { systemDepartmentController } from "./modules/system-department/system-department.controller";
 import { systemDictDetailController } from "./modules/system-dict/system-dict-detail.controller";
 import { systemDictController } from "./modules/system-dict/system-dict.controller";
+import { systemOperationLogController } from "./modules/system-operation-log/system-operation-log.controller";
 import { systemRoleController } from "./modules/system-role/system-role.controller";
 import { uploadController } from "./modules/upload/upload.controller";
 
@@ -18,4 +19,5 @@ export const allRoutes = new Elysia({ prefix: "/api/v1" })
   .use(systemAccountController)
   .use(systemDepartmentController)
   .use(systemDictController)
-  .use(systemDictDetailController);
+  .use(systemDictDetailController)
+  .use(systemOperationLogController);

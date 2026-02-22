@@ -4,7 +4,6 @@ import type { Logger } from "typeorm";
 import { DataSource, FileLogger } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategy";
 import { Logger as WinstonLogger } from "winston";
-import { SystemOperationLog } from "../../modules/operation-log/system-operation-log.entity";
 import { SystemAccount } from "../../modules/system-account/system-account.entity";
 import { SystemConfig } from "../../modules/system-config/system-config.entity";
 import { SystemDepartment } from "../../modules/system-department/system-department.entity";
@@ -13,6 +12,7 @@ import { SystemDict } from "../../modules/system-dict/system-dict.entity";
 import { SystemRole } from "../../modules/system-role/system-role.entity";
 import { SystemTenant } from "../../modules/system-tenant/system-tenant.entity";
 import { logger } from "../logger";
+import { SystemOperationLog } from "../../modules/system-operation-log/system-operation-log.entity";
 
 export class TypeORMLogger extends FileLogger implements Logger {
   constructor(readonly typeormLogger: WinstonLogger) {

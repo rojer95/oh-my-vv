@@ -11,8 +11,8 @@ import { isArray, isFinite } from "lodash-es";
 import { FindOperator } from "typeorm";
 import { JwtPayload } from "../interface";
 import { AuthService } from "../modules/auth/auth.service";
-import { OperationLogService } from "../modules/operation-log/operation-log.service";
 import { SystemAccountService } from "../modules/system-account/system-account.service";
+import { SystemOperationLogService } from "../modules/system-operation-log/system-operation-log.service";
 import { BusinessError } from "./error";
 import { ipPlugin } from "./ip";
 import { jwtPlugin } from "./jwt";
@@ -186,17 +186,19 @@ export const authPlugin = new Elysia({ name: "lib_auth" })
           ? {
               query:
                 query && Object.keys(query).length > 0
-                  ? OperationLogService.sanitizeData(query)
+                  ? SystemOperationLogService.sanitizeData(query)
                   : undefined,
               params:
                 params && Object.keys(params).length > 0
-                  ? OperationLogService.sanitizeData(params)
+                  ? SystemOperationLogService.sanitizeData(params)
                   : undefined,
-              body: body ? OperationLogService.sanitizeData(body) : undefined,
+              body: body
+                ? SystemOperationLogService.sanitizeData(body)
+                : undefined,
             }
           : {};
 
-        await OperationLogService.createOperationLog({
+        await SystemOperationLogService.createOperationLog({
           operatorId: user.id,
           operatorAccount: user.account,
           operatorName: user.realName,

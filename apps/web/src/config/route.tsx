@@ -16,6 +16,7 @@ import { UploadConfigPage } from "../page/system/config/upload";
 import { DepartmentPage } from "../page/system/department";
 import { DictPage } from "../page/system/dict/dict";
 import { RolePage } from "../page/system/role";
+import { OplogPage } from "../page/system/oplog";
 
 /**
  * 路由handle附加数据定义
@@ -141,6 +142,15 @@ const mainRoute: RouteObject[] = [
               access: PERMISSIONS.systemDepartmentView.key,
             },
             element: <DepartmentPage />,
+          },
+
+          {
+            path: "oplog",
+            handle: {
+              menu: "操作日志",
+              access: PERMISSIONS.systemOplogView.key,
+            },
+            element: <OplogPage />,
           },
         ],
       },
