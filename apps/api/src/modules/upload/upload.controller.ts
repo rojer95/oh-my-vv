@@ -1,10 +1,11 @@
 import { PERMISSIONS, UPLOAD_JWT_ISSUER, UploadType } from "@rojer/mf-common";
 import { Elysia, t } from "elysia";
-import z from "zod";
+import fs from "fs";
 import { authPlugin } from "../../lib/auth";
 import { curdPlugin } from "../../lib/curd";
 import { UploadService } from "./upload.service";
 import { UploadDto, UploadSettingDto } from "./upload.dto";
+import path from "path";
 
 export const uploadController = new Elysia()
   .use(curdPlugin)
@@ -68,7 +69,7 @@ export const uploadController = new Elysia()
             mimeLimit: string;
             fsizeLimit: number;
           }>(body.token, UPLOAD_JWT_ISSUER);
-          return await UploadService.saveLocal(body.file, uploadPayload);
+          return await UploadService.uploadLocal(body.file, uploadPayload);
         },
         {
           body: t.Object({

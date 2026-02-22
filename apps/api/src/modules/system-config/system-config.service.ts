@@ -60,7 +60,10 @@ export abstract class SystemConfigService {
 
   static async update(id: number, data: Partial<SystemConfig>) {
     const config = await this.findOneBy({ id });
-    this.repo.merge(config, pick(data, ["name", "value", "note"]));
+    this.repo.merge(
+      config,
+      pick(data, config.buildIn ? ["value"] : ["name", "value", "note"]),
+    );
     return await this.repo.save(config);
   }
 

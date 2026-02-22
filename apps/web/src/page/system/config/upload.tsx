@@ -184,6 +184,14 @@ export const UploadConfigPage = () => {
                   },
                 },
                 {
+                  dataIndex: "oss.region",
+                  title: "Region",
+                  required: true,
+                  props: {
+                    extraText: "所属地域，oss-cn-开头",
+                  },
+                },
+                {
                   dataIndex: "oss.domain",
                   title: "空间域名",
                   required: true,
@@ -222,13 +230,17 @@ export const UploadConfigPage = () => {
                   dataIndex: "cos.region",
                   title: "Region",
                   required: true,
+                  props: {
+                    extraText: "所属地域，ap-开头",
+                  },
                 },
                 {
                   dataIndex: "cos.bucket",
                   title: "Bucket",
                   required: true,
                   props: {
-                    extraText: "需要在阿里云配置允许跨域上传",
+                    extraText:
+                      "需要在腾讯云配置允许跨域上传：https://cloud.tencent.com/document/product/436/9067",
                   },
                 },
                 {

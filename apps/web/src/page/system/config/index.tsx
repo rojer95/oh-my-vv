@@ -50,6 +50,12 @@ export const SystemConfigPage = () => {
             dataIndex: "name",
             title: "参数名称",
             required: true,
+            deps: ["buildIn"],
+            props: ({ values }) => {
+              return {
+                disabled: values.buildIn === true,
+              };
+            },
           },
           {
             dataIndex: "key",

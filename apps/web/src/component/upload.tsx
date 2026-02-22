@@ -12,6 +12,8 @@ import { useEffect, useMemo, useState } from "react";
 import { v4 } from "uuid";
 import { isPlainObject, pick } from "lodash-es";
 
+const keepFields = ["uid", "url", "name", "size", "uploadType"];
+
 const DefaultChildren = (
   <Button icon={<IconUpload />} theme="light">
     点击上传
@@ -22,11 +24,20 @@ const urlGetter = (i: any) => {
   if (
     i?.response &&
     typeof i?.response?.url === "string" &&
-    i?.response?.url?.indexOf("//") !== -1
+    i?.response?.url?.indexOf("://") >= 0
   ) {
     return i.response.url;
   }
   return i.url;
+};
+
+const uploadTypeGetter = (i: any) => {
+  if (i.uploadType) return i.uploadType;
+
+  if (i?.response && typeof i?.response?.uploadType === "string") {
+    return i.response.uploadType;
+  }
+  return null;
 };
 
 const value2list = (value: any): FileItem[] => {
@@ -34,6 +45,7 @@ const value2list = (value: any): FileItem[] => {
     return value.map((i) => ({
       uid: i?.uid || v4(),
       url: i?.url,
+      uploadType: i?.uploadType,
       name: i?.name,
       size: i?.size,
       status: "success",
@@ -45,6 +57,7 @@ const value2list = (value: any): FileItem[] => {
       {
         uid: value?.uid || v4(),
         url: value?.url,
+        uploadType: value?.uploadType,
         name: value?.name,
         size: value?.size,
         status: "success",
@@ -63,19 +76,22 @@ const list2value = (list: any, multiple: boolean) => {
         {
           ...i,
           url: urlGetter(i),
+          uploadType: uploadTypeGetter(i),
         },
-        ["uid", "url", "name", "size"],
+        keepFields,
       ),
     );
   }
 
   if (successList.length === 0) return undefined;
-  return pick({ ...successList[0], url: urlGetter(successList[0]) }, [
-    "uid",
-    "url",
-    "name",
-    "size",
-  ]);
+  return pick(
+    {
+      ...successList[0],
+      url: urlGetter(successList[0]),
+      uploadType: uploadTypeGetter(successList[0]),
+    },
+    keepFields,
+  );
 };
 
 export type UploadProps = Omit<SemiUploadProps, "action"> & {
@@ -133,6 +149,7 @@ export const Upload = ({
     ) {
       return;
     }
+
     onChange?.(list2value(changeList, multiple));
   };
 

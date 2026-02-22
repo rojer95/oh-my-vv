@@ -2,6 +2,7 @@ import z from "zod";
 export const UploadFileDto = z.object({
   uid: z.string(),
   name: z.string(),
+  uploadType: z.string(),
   size: z.string().or(z.number()),
   url: z.string().or(z.number()),
 });
@@ -42,6 +43,7 @@ export const OssUploadSettingDto = z.object({
     accessKeyId: z.string(),
     accessKeySecret: z.string(),
     bucket: z.string(),
+    region: z.string(),
     domain: z.string(),
     prefix: z.string().nullish(),
   }),

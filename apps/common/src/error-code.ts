@@ -41,4 +41,6 @@ export const BusinessErrorCode = {
   UploadUnsupportMime: [15003, "不支持的文件类型"],
   UploadUnactive: [15004, "上传组件未启用/设置"],
   UploadMaxsize: [15005, "文件上传上限 {{size}} M"],
+  UploadUnsupportFile: [15006, "不支持的文件类型"],
+  UploadSaveFail: [15006, "保存文件失败：{{message}}"],
 } as const;
