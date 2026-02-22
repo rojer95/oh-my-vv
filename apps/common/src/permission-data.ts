@@ -55,6 +55,60 @@ export const PERMISSION_TREE = [
         ],
       },
       {
+        key: "dict",
+        name: "数据字典",
+        children: [
+          {
+            key: "view",
+            name: "查看字典",
+            accountType: [AccountType.platform],
+          },
+          {
+            key: "create",
+            name: "新增字典",
+            accountType: [AccountType.platform],
+          },
+          {
+            key: "update",
+            name: "修改字典",
+            accountType: [AccountType.platform],
+          },
+          {
+            key: "delete",
+            name: "删除字典",
+            accountType: [AccountType.platform],
+          },
+
+          {
+            key: "detail",
+            name: "数据字典详情",
+            children: [
+              {
+                key: "view",
+                name: "查看字典详情",
+                accountType: [AccountType.platform],
+              },
+              {
+                key: "create",
+                name: "新增字典详情",
+                accountType: [AccountType.platform],
+              },
+              {
+                key: "update",
+                name: "修改字典详情",
+                accountType: [AccountType.platform],
+              },
+              {
+                key: "delete",
+                name: "删除字典详情",
+                accountType: [AccountType.platform],
+              },
+            ],
+          },
+        ],
+      },
+
+      {
         key: "account",
         name: "账户管理",
         children: [

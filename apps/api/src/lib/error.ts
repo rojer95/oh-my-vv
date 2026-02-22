@@ -1,5 +1,6 @@
 import Elysia, { status } from "elysia";
 import { logger } from "./logger";
+import z, { ZodError } from "zod";
 
 export class BusinessError extends Error {
   errCode: number;
@@ -42,7 +43,12 @@ export const errorPlugin = () =>
           break;
 
         case "VALIDATION":
-          res = status(200, { code: 400, message: error.customError });
+          res = status(200, {
+            code: 400,
+            message: error.valueError
+              ? z.prettifyError({ issues: [error.valueError as any] })
+              : error.customError,
+          });
           break;
 
         case "PARSE":

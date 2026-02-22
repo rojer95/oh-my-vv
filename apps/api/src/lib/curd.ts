@@ -15,8 +15,9 @@ import {
 } from "typeorm";
 import z from "zod";
 
-type InjectRule = {
+type Option = {
   tenantId?: boolean | string;
+  defaultSort?: Record<string, "DESC" | "ASC">;
 };
 
 export interface CurdFindManyOptions<
@@ -90,7 +91,7 @@ const getWhereItem = (item: any) => {
  * @returns
  */
 const getWhere = (
-  injectRule: InjectRule,
+  option: Option,
   data: any,
   tenantId?: number,
 ): Record<string, any> => {
@@ -105,9 +106,12 @@ const getWhere = (
     }
   }
 
-  if (injectRule?.tenantId) {
-    where[injectRule.tenantId === true ? "tenantId" : injectRule.tenantId] =
-      isNil(tenantId) ? -1 : tenantId;
+  if (option?.tenantId) {
+    where[option.tenantId === true ? "tenantId" : option.tenantId] = isNil(
+      tenantId,
+    )
+      ? -1
+      : tenantId;
   }
 
   return where;
@@ -117,16 +121,19 @@ const getWhere = (
  * 从请求中获取排序
  * @returns
  */
-const getOrder = (data: any) => {
-  const order = data?.order || {};
+const getOrder = (data: any, option?: Option) => {
   const parseResult = z
     .record(
       z.string(),
       z.enum(["ASC", "asc", "DESC", "desc"]).transform((v) => v.toUpperCase()),
     )
-    .safeParse(order);
+    .safeParse(data?.order || {});
   if (!parseResult.success) throw parseResult.error;
-  return parseResult.data;
+  let order = parseResult.data;
+  if (Object.keys(order).length === 0 && option?.defaultSort) {
+    return option.defaultSort;
+  }
+  return order;
 };
 
 /**
@@ -168,17 +175,17 @@ export const curdPlugin = new Elysia({ name: "lib_curd" })
       tenantId: 0,
     },
   }))
-  .macro("findManyOption", (injectRule?: InjectRule | true) => ({
+  .macro("findManyOption", (option?: Option | true) => ({
     resolve: ({ query, body, request, tenantId }) => {
-      if (injectRule === true || injectRule === undefined) {
-        injectRule = {
+      if (option === true || option === undefined) {
+        option = {
           tenantId: "tenantId",
         };
       }
       const data = getData(request.method, { query, body });
       const options: CurdFindManyOptions = {
-        where: getWhere(injectRule, data, tenantId),
-        order: getOrder(data),
+        where: getWhere(option, data, tenantId),
+        order: getOrder(data, option),
         ...getPager(data),
       };
       return {

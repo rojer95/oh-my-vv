@@ -1,6 +1,5 @@
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity } from "typeorm";
 import { BaseEntity } from "../../lib/base.entity";
-import { SystemDict } from "./system-dict.entity";
 
 // 数据字典详情
 @Entity()
@@ -27,16 +26,13 @@ export class SystemDictDetail extends BaseEntity {
 
   // 备注
   @Column({ length: 512, nullable: true })
-  note?: string;
+  note?: string | null;
 
   // Tag颜色
   @Column({ length: 36, nullable: true })
-  color?: string;
+  color?: string | null;
 
   // 样式
   @Column({ length: 512, nullable: true })
-  style?: string;
-
-  @ManyToOne(() => SystemDict, (dict) => dict.details)
-  dict: SystemDict;
+  style?: string | null;
 }

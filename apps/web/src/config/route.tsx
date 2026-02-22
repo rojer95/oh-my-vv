@@ -14,6 +14,7 @@ import { SystemAccountPage } from "../page/system/account";
 import { SystemConfigPage } from "../page/system/config";
 import { UploadConfigPage } from "../page/system/config/upload";
 import { DepartmentPage } from "../page/system/department";
+import { DictPage } from "../page/system/dict/dict";
 import { RolePage } from "../page/system/role";
 
 /**
@@ -52,7 +53,6 @@ const mainRoute: RouteObject[] = [
     },
     children: [
       /**
-
       {
         path: "merchant",
         element: <MerchantListPage />,
@@ -61,42 +61,12 @@ const mainRoute: RouteObject[] = [
           access: "merchant.read",
         },
       },
-
-      {
-        path: "dict",
-        handle: {
-          menu: "数据字典",
-          access: "dict.read",
-        },
-        element: <DictPage />,
-      },
-
-     
-
       {
         path: "auth",
         handle: {
           menu: "权限&账户",
         },
         children: [
-          {
-            path: "admin",
-            handle: {
-              menu: "账号",
-              access: "admin.read",
-            },
-            element: <AdminPage />,
-          },
-
-          {
-            path: "role",
-            handle: {
-              menu: "角色",
-              access: "role.read",
-            },
-            element: <RolePage />,
-          },
-
           {
             path: "oplog",
             handle: {
@@ -130,6 +100,14 @@ const mainRoute: RouteObject[] = [
               access: PERMISSIONS.systemUploadView.key,
             },
             element: <UploadConfigPage />,
+          },
+          {
+            path: "dict",
+            handle: {
+              menu: "数据字典",
+              access: PERMISSIONS.systemDictView.key,
+            },
+            element: <DictPage />,
           },
         ],
       },

@@ -43,4 +43,6 @@ export const BusinessErrorCode = {
   UploadMaxsize: [15005, "文件上传上限 {{size}} M"],
   UploadUnsupportFile: [15006, "不支持的文件类型"],
   UploadSaveFail: [15006, "保存文件失败：{{message}}"],
+  /** 数据字典 */
+  DictKeyDuplicateKey: [16001, "键值已存在，请换一个吧～"],
 } as const;

@@ -62,7 +62,7 @@ export const SystemConfigPage = () => {
             title: "参数键名",
             required: true,
             props: {
-              extraText: "唯一标识设定后不可修改",
+              extraText: "参数键名设定后不可修改",
               readonly: !!initValues?.id,
               disabled: !!initValues?.id,
             },

@@ -19,7 +19,7 @@ export class SystemDict extends BaseEntity {
 
   // 备注
   @Column({ length: 512, nullable: true })
-  note?: string;
+  note: string | null;
 
   @OneToMany(() => SystemDictDetail, (detail: SystemDictDetail) => detail.dict)
   details: SystemDictDetail[];
