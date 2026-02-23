@@ -9,7 +9,11 @@ import {
   transformSelectTreeData,
 } from "@/util";
 import { Space, Tag, Toast } from "@douyinfe/semi-ui";
-import { RoleDataPermType, RoleDataPermTypeOptions } from "@rojer/mf-common";
+import {
+  PERMISSIONS,
+  RoleDataPermType,
+  RoleDataPermTypeOptions,
+} from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useMemo, useRef, useState } from "react";
 
@@ -75,7 +79,7 @@ export const RolePage = () => {
         columns={[
           { dataIndex: "name", title: "名称", required: true },
           { dataIndex: "sort", title: "排序", type: "number" },
-          { dataIndex: "active", title: "状态", type: "switch" },
+          { dataIndex: "active", title: "状态", type: "active" },
           {
             dataIndex: "dataPermType",
             title: "数据权限",
@@ -163,10 +167,10 @@ export const RolePage = () => {
           },
           {
             dataIndex: "active",
-            title: "有效",
-            type: "fast-radio",
+            title: "状态",
+            type: "active",
             props: {
-              permission: "system:role:update",
+              permission: PERMISSIONS.systemRoleUpdate.key,
               onSubmit: async (editValue, record) => {
                 await api.api.v1["system-role"]({ id: record.id })[
                   "fastUpdate"
@@ -179,6 +183,17 @@ export const RolePage = () => {
             dataIndex: "sort",
             title: "排序",
             sorter: true,
+            type: "fast-index",
+            width: 60,
+            props: {
+              permission: PERMISSIONS.systemRoleUpdate.key,
+              onSubmit: async (editValue, record) => {
+                await api.api.v1["system-role"]({
+                  id: record.id,
+                }).fastUpdate.put({ sort: editValue });
+                tableRef.current?.refresh?.();
+              },
+            },
           },
           {
             dataIndex: "createdAt",

@@ -10,7 +10,7 @@ import {
   Toast,
   Tree,
 } from "@douyinfe/semi-ui";
-import { PASSWORD_PATTERN } from "@rojer/mf-common";
+import { PASSWORD_PATTERN, PERMISSIONS } from "@rojer/mf-common";
 import { useRequest } from "ahooks";
 import { useMemo, useRef, useState } from "react";
 
@@ -166,13 +166,7 @@ export const SystemAccountPage = () => {
               {
                 dataIndex: "active",
                 title: "状态",
-                type: "switch",
-                props: {
-                  options: [
-                    { label: "启用", value: true },
-                    { label: "禁用", value: false },
-                  ],
-                },
+                type: "active",
               },
 
               {
@@ -299,15 +293,9 @@ export const SystemAccountPage = () => {
                 {
                   dataIndex: "active",
                   title: "状态",
-                  type: "switch",
+                  type: "active",
                   showInFilter: true,
                   width: 80,
-                  props: {
-                    options: [
-                      { label: "启用", value: true },
-                      { label: "禁用", value: false },
-                    ],
-                  },
                 },
                 { dataIndex: "loginCount", title: "登录次数", width: 100 },
                 { dataIndex: "lastIp", title: "最后登录IP", width: 140 },
@@ -331,7 +319,7 @@ export const SystemAccountPage = () => {
                     {
                       key: "resetPassword",
                       text: "重置密码",
-                      permission: "system:account:resetPassword",
+                      permission: PERMISSIONS.systemAccountResetPassword.key,
                       onClick: () => {
                         setTargetAccount(record);
                         setResetPasswordVisible(true);

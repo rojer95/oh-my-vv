@@ -1,7 +1,7 @@
 import { api } from "@/api";
 import { SchemaForm } from "@/component/schema/form";
 import { SchemaTable, SchemaTableInstance } from "@/component/schema/table";
-import { Modal, Toast } from "@douyinfe/semi-ui";
+import { Modal, Tag, Toast, Typography } from "@douyinfe/semi-ui";
 import { PERMISSIONS } from "@rojer/mf-common";
 import { useRef, useState } from "react";
 import { DictDetailPage } from "./dict-detail";
@@ -116,18 +116,44 @@ export const DictPage = () => {
           {
             dataIndex: "name",
             title: "键名",
+            tableColumnRender: (dom, _, record) => {
+              return (
+                <Typography.Text
+                  link
+                  onClick={() => {
+                    setCurrentDict(record);
+                    setDetailVisible(true);
+                  }}
+                >
+                  {dom}
+                </Typography.Text>
+              );
+            },
           },
           {
             dataIndex: "key",
             title: "键值",
+            tableColumnRender: (dom, _, record) => {
+              return (
+                <Typography.Text
+                  link
+                  onClick={() => {
+                    setCurrentDict(record);
+                    setDetailVisible(true);
+                  }}
+                >
+                  {dom}
+                </Typography.Text>
+              );
+            },
           },
           {
             dataIndex: "active",
             title: "状态",
-            type: "fast-radio",
-            width: 60,
+            type: "active",
+            width: 100,
             props: {
-              permission: "system:department:update",
+              permission: PERMISSIONS.systemDictUpdate.key,
               onSubmit: async (editValue, record) => {
                 await api.api.v1["system-dict"]({ id: record.id })[
                   "fastUpdate"
@@ -147,19 +173,6 @@ export const DictPage = () => {
           {
             type: "action",
             width: 100,
-            tableActionRender: (record) => {
-              return [
-                {
-                  text: "管理详情",
-                  permission: PERMISSIONS.systemDictDetailView.key,
-                  onClick: () => {
-                    setCurrentDict(record);
-                    setDetailVisible(true);
-                  },
-                  key: "read",
-                },
-              ];
-            },
           },
         ]}
       />

@@ -41,7 +41,7 @@ export const SystemConfigPage = () => {
             setInitValues({});
             setEditVisible(false);
           },
-          title: `${initValues?.id ? "编辑" : "创建"}系统配置`,
+          title: `${initValues?.id ? "编辑" : "创建"}参数设置`,
         }}
         initValues={initValues}
         onSubmit={onSubmit}
@@ -100,7 +100,7 @@ export const SystemConfigPage = () => {
         ]}
       />
       <SchemaTable
-        title="系统配置"
+        title="参数设置"
         tableRef={tableRef}
         request={api.api.v1["system-config"].read.post}
         createAccess="system:config:create"

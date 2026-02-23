@@ -52,7 +52,7 @@ export const FastRadio = (props: any) => {
 
   return editing ? (
     <Spin spinning={loading}>
-      <Space>
+      <Space wrap>
         <RadioGroup
           buttonSize="small"
           value={editValue}
@@ -82,14 +82,16 @@ export const FastRadio = (props: any) => {
   ) : (
     <Access permission={props.permission} feedback={dom}>
       <span
-        className="fast-cell"
+        className={`${props?.onSubmit ? "fast-cell" : ""}`}
         onClick={() => {
-          setEditValue(props.value);
-          setEditing(true);
+          if (props?.onSubmit) {
+            setEditValue(props.value);
+            setEditing(true);
+          }
         }}
       >
         {dom}
-        <IconEdit2Stroked size="small" />
+        {props?.onSubmit ? <IconEdit2Stroked size="small" /> : null}
       </span>
     </Access>
   );

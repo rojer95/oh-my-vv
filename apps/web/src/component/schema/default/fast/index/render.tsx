@@ -1,5 +1,5 @@
 import { IconClose, IconEdit2Stroked, IconTick } from "@douyinfe/semi-icons";
-import { Button, InputNumber, Spin } from "@douyinfe/semi-ui";
+import { Button, InputNumber, Space, Spin } from "@douyinfe/semi-ui";
 import { useEffect, useState } from "react";
 import { Access } from "../../../../auth/access";
 
@@ -32,36 +32,35 @@ export const FastIndex = (props: any) => {
 
   return editing ? (
     <Spin spinning={loading}>
-      <InputNumber
-        autoFocus
-        value={editValue}
-        onNumberChange={setEditValue}
-        size="small"
-        onEnterPress={() => {
-          submit();
-        }}
-        onBlur={() => {
-          if (editing) setEditing(false);
-        }}
-        suffix={
-          <>
-            <Button
-              onClick={submit}
-              theme="borderless"
-              size="small"
-              icon={<IconTick size="small" />}
-            />
-            <Button
-              onClick={reset}
-              theme="borderless"
-              size="small"
-              icon={<IconClose size="small" />}
-            />
-          </>
-        }
-        style={{ width: 90 }}
-        hideButtons
-      />
+      <Space wrap>
+        <InputNumber
+          autoFocus
+          value={editValue}
+          onNumberChange={setEditValue}
+          size="small"
+          onEnterPress={() => {
+            submit();
+          }}
+          style={{ width: 90 }}
+          hideButtons
+        />
+        <Button
+          onClick={() => {
+            submit();
+          }}
+          theme="borderless"
+          size="small"
+          icon={<IconTick size="small" />}
+        />
+        <Button
+          onClick={() => {
+            reset();
+          }}
+          theme="borderless"
+          size="small"
+          icon={<IconClose size="small" />}
+        />
+      </Space>
     </Spin>
   ) : (
     <Access

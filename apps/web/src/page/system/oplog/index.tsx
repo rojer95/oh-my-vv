@@ -1,7 +1,10 @@
 import { api } from "@/api";
 import { SchemaTable } from "@/component/schema/table";
+import { FULL_KEY_PERMISSION_TREE, PERMISSION_TREE } from "@rojer/mf-common";
 
 export const OplogPage = () => {
+  console.log(PERMISSION_TREE);
+
   return (
     <>
       <SchemaTable
@@ -36,22 +39,26 @@ export const OplogPage = () => {
             title: "错误信息",
           },
 
-          // {
-          //   dataIndex: "opKey",
-          //   title: "操作",
-          //   showInFilter: true,
-          //   hiddenInTable: true,
-          //   type: "tree-select",
-          //   props: {
-          //     treeData: options?.permission || [],
-          //     expandAll: true,
-          //     leafOnly: true,
-          //     virtualize: {
-          //       itemSize: 28,
-          //       height: 336,
-          //     },
-          //   },
-          // },
+          {
+            dataIndex: "permissionKey",
+            title: "操作",
+            showInFilter: true,
+            hiddenInTable: true,
+            type: "tree-select",
+            props: {
+              treeData: FULL_KEY_PERMISSION_TREE,
+              expandAll: true,
+              keyMaps: {
+                label: "name",
+                key: "key",
+                value: "key",
+              },
+              virtualize: {
+                itemSize: 28,
+                height: 336,
+              },
+            },
+          },
 
           {
             dataIndex: "ip",

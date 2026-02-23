@@ -42,6 +42,7 @@ import { TextareaColumn, textarea } from "./textarea";
 import { TimeColunm, time } from "./time";
 import { TreeColumn, tree } from "./tree";
 import { TreeSelectColumn, treeSelect } from "./tree-select";
+import { active, ActiveColumn } from "./active";
 
 export const defaultColumn = {
   section,
@@ -74,6 +75,7 @@ export const defaultColumn = {
   display,
   polygon,
   stock,
+  active,
   ["complex-array"]: complexArray,
   ["tree-select"]: treeSelect,
   ["group-select"]: groupSelect,
@@ -132,4 +134,5 @@ export type DefaultSchemaColumn =
   | DisplayColumn
   | PolygonColumn
   | InputGroupColumn
+  | ActiveColumn
   | SchemaColumnBase<"action", ActionProps>;

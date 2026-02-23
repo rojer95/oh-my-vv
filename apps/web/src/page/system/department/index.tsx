@@ -108,13 +108,7 @@ export const DepartmentPage = () => {
           {
             dataIndex: "active",
             title: "状态",
-            type: "switch",
-            props: {
-              options: [
-                { label: "启用", value: true },
-                { label: "禁用", value: false },
-              ],
-            },
+            type: "active",
           },
         ]}
       />
@@ -127,7 +121,7 @@ export const DepartmentPage = () => {
         onExpandedRowsChange={(rows) => {
           setExpandedRowKeys(rows?.map((i) => i.id) || []);
         }}
-        createAccess="system:department:create"
+        createAccess={PERMISSIONS.systemDepartmentCreate.key}
         onRefresh={refresh}
         columns={[
           {
@@ -137,10 +131,10 @@ export const DepartmentPage = () => {
           {
             dataIndex: "active",
             title: "状态",
-            type: "fast-radio",
+            type: "active",
             width: 60,
             props: {
-              permission: "system:department:update",
+              permission: PERMISSIONS.systemDepartmentUpdate.key,
               onSubmit: async (editValue, record) => {
                 await api.api.v1["system-department"]({ id: record.id })[
                   "fastUpdate"
@@ -156,7 +150,7 @@ export const DepartmentPage = () => {
             type: "fast-index",
             width: 60,
             props: {
-              permission: "system:department:update",
+              permission: PERMISSIONS.systemDepartmentUpdate.key,
               onSubmit: async (editValue, record) => {
                 await api.api.v1["system-department"]({ id: record.id })[
                   "fastUpdate"

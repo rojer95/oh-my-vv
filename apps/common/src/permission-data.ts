@@ -14,26 +14,26 @@ export const PERMISSION_TREE = [
     children: [
       {
         key: "config",
-        name: "系统配置",
+        name: "参数设置",
         children: [
           {
             key: "view",
-            name: "查看配置",
+            name: "查看参数",
             accountType: [AccountType.platform],
           },
           {
             key: "create",
-            name: "新增配置",
+            name: "新增参数",
             accountType: [AccountType.platform],
           },
           {
             key: "update",
-            name: "修改配置",
+            name: "修改参数",
             accountType: [AccountType.platform],
           },
           {
             key: "delete",
-            name: "删除配置",
+            name: "删除参数",
             accountType: [AccountType.platform],
           },
         ],

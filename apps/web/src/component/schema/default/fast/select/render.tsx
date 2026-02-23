@@ -40,7 +40,7 @@ export const FastSelect = (props: any) => {
 
   return editing ? (
     <Spin spinning={loading}>
-      <Space>
+      <Space wrap>
         <Select
           value={editValue}
           onChange={(v) => {

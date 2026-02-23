@@ -184,10 +184,10 @@ export const DictDetailPage = ({ systemDictId }: { systemDictId: number }) => {
           {
             dataIndex: "active",
             title: "状态",
-            type: "fast-radio",
+            type: "active",
             width: 60,
             props: {
-              permission: "system:department:update",
+              permission: PERMISSIONS.systemDictDetailUpdate.key,
               onSubmit: async (editValue, record) => {
                 await api.api.v1["system-dict-detail"]({ id: record.id })[
                   "fastUpdate"
@@ -203,7 +203,7 @@ export const DictDetailPage = ({ systemDictId }: { systemDictId: number }) => {
             type: "fast-index",
             width: 60,
             props: {
-              permission: "system:department:update",
+              permission: PERMISSIONS.systemDictDetailUpdate.key,
               onSubmit: async (editValue, record) => {
                 await api.api.v1["system-dict-detail"]({ id: record.id })[
                   "fastUpdate"

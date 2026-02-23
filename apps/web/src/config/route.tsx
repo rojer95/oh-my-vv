@@ -89,7 +89,7 @@ const mainRoute: RouteObject[] = [
           {
             path: "system",
             handle: {
-              menu: "系统配置",
+              menu: "参数设置",
               access: PERMISSIONS.systemConfigView.key,
             },
             element: <SystemConfigPage />,
