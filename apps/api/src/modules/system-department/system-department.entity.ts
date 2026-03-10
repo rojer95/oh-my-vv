@@ -24,8 +24,8 @@ export class SystemDepartment extends BaseEntitySoftDeleteWithTenant {
 
   @Column({
     name: "mpath",
-    nullable: true,
-    select: true,
+    generated: true,
+    generatedType: "STORED",
   })
   path: string;
 }
