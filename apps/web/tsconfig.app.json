@@ -16,6 +16,7 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "experimentalDecorators": true,
 
     /* Linting */
     "strict": true,
@@ -39,5 +40,5 @@
       "@/global.css": ["./src/@/global.css"]
     }
   },
-  "include": ["src", "typing.d.ts"]
+  "include": ["src", "vv", "typing.d.ts"]
 }

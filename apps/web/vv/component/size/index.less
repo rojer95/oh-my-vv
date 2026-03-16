@@ -1,0 +1,48 @@
+.semi-aiChatInput-footer-configure-sizebox {
+  .radio {
+    width: 328px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--semi-color-bg-1);
+    border-radius: var(--semi-border-radius-small);
+    padding: 4px;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    .radio-item {
+      color: var(--semi-color-text-3);
+      text-align: center;
+      min-height: 20px;
+      flex-direction: column;
+      box-sizing: border-box;
+      min-width: 60px;
+      display: flex;
+      padding: 4px;
+      align-items: center;
+      justify-content: center;
+      flex-grow: 1;
+      border-radius: var(--semi-border-radius-small);
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        color: var(--semi-color-text-1);
+      }
+
+      &.active {
+        color: var(--semi-color-text-1);
+        background-color: var(--semi-color-fill-0);
+      }
+
+      .radio-icon {
+        height: 22px;
+        width: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}
