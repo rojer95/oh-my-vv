@@ -17,6 +17,12 @@ class VvGlobal {
     addAt?: { x: number; y: number };
     menuAt?: { x: number; y: number };
   };
+  aiChatBoxPosition: {
+    visible: boolean;
+    x?: number;
+    y?: number;
+  } = { visible: false };
+  rid: number = 1;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -115,6 +121,46 @@ class VvGlobal {
       this.connector?.connector?.destroy();
     }
     this.connector = undefined;
+  }
+
+  hideAiChatPosition() {
+    this.aiChatBoxPosition = { visible: false };
+  }
+
+  // 工具栏计算并更新位置
+  updateToolPosition() {
+    if (this.connector) return;
+
+    if (!this.activeNode) {
+      this.aiChatBoxPosition = { visible: false };
+      this.linkBtnLeft?.set({ visible: false });
+      this.linkBtnRight?.set({ visible: false });
+    } else {
+      (this.activeNode as any)?.__updateWorldMatrix?.();
+      const bounds = this.activeNode.worldBoxBounds;
+
+      this.aiChatBoxPosition = {
+        visible: true,
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y + bounds.height,
+      };
+
+      this.linkBtnLeft?.set({
+        x: -18,
+        y: bounds.height / 2,
+        visible: true,
+      });
+
+      this.linkBtnRight?.set({
+        x: bounds.width + 18,
+        y: bounds.height / 2,
+        visible: true,
+      });
+    }
+  }
+
+  rerender() {
+    this.rid++;
   }
 }
 

@@ -1,4 +1,5 @@
 import {
+  boundsType,
   Box,
   BoxData,
   dataProcessor,
@@ -7,20 +8,37 @@ import {
   IBoxInputData,
   Image,
   ImageEvent,
+  PropertyEvent,
+  Rect,
   registerUI,
-  surfaceType,
+  Text,
 } from "leafer-ui";
+import { vvGlobal } from "../mobx/vv-global";
+import placeholderImg from "../asset/temp-image.svg";
 
+interface AiProps {
+  imgProps?: {
+    imageSize?: string; // 分辨率
+    aspectRatio?: string; // 比例
+  };
+  content?: string; // 提示词
+  model?: string; // 模型
+  provider?: string; //模型提供商
+}
 interface IVvImageInputData extends IBoxInputData {
-  urls?: string[];
-  size?: [number, number, number];
+  url?: string;
+  alternativeUrls?: string[];
   preNodes?: string[];
+  aiProps?: AiProps;
+  generating?: boolean;
 }
 
 interface IVvImageData extends IBoxData {
-  urls?: string[];
-  size?: [number, number, number];
+  url?: string;
+  alternativeUrls?: string[];
   preNodes?: string[];
+  aiProps?: AiProps;
+  generating?: boolean;
 }
 
 class VvImageData extends BoxData implements IVvImageData {}
@@ -34,13 +52,30 @@ export class VvImage extends Box {
   @dataProcessor(VvImageData)
   declare public __: IVvImageData;
 
-  @surfaceType([])
-  declare public urls: string[];
+  @boundsType(undefined)
+  declare public url: string | undefined;
+
+  @boundsType([])
+  declare public alternativeUrls: string[];
+
+  @boundsType(false)
+  declare public generating: boolean;
 
   @dataType([])
   declare public preNodes: string[];
 
-  private activeImg: Image | undefined = undefined;
+  @dataType({
+    imgProps: {
+      aspectRatio: "16:9",
+      imageSize: "2k",
+    },
+    model: "nano-banana-pro",
+    provider: "google",
+  })
+  declare public aiProps: AiProps;
+
+  private imgNode: Image | undefined = undefined;
+  private placeholderNode: Image | undefined = undefined;
 
   constructor(input: IVvImageInputData) {
     super(input);
@@ -48,15 +83,26 @@ export class VvImage extends Box {
       ...this.editConfig,
     };
 
-    this.width = 0;
+    this.width = 640;
+    this.height = 640;
+    this.hitBox = true;
     this.cornerRadius = 8;
     this.stroke = "rgba(255, 255, 255, 0.4)";
     this.strokeWidth = 2;
     this.strokeAlign = "outside";
     this.strokeScaleFixed = "zoom-in";
     this.childlessJSON = true;
+    this.updateImage();
 
-    this.loadImage();
+    this.on(PropertyEvent.CHANGE, (e) => {
+      if (e.attrName === "url" || e.attrName === "alternativeUrls") {
+        this.updateImage();
+      }
+
+      if (e.attrName === "generating") {
+        this.updateGenerating();
+      }
+    });
   }
 
   private calculateImageSize(
@@ -75,10 +121,35 @@ export class VvImage extends Box {
     };
   }
 
-  private loadImage() {
-    const backupImageUrls = (this.urls || []).slice(1).reverse();
-    for (let index = 0; index < backupImageUrls.length; index++) {
-      const backupImageUrl = backupImageUrls[index];
+  private updateGenerating() {
+    this.remove(".generating");
+
+    if (this.generating) {
+      this.add(
+        Rect.one({
+          x: 0,
+          y: 0,
+          width: this.width,
+          height: this.height,
+          fill: "rgba(255, 255, 255, 0.1)",
+          animation: {
+            style: { fill: "rgba(255, 255, 255, 0.6)" },
+            duration: 1,
+            swing: true, // 摇摆循环播放
+          },
+          className: "generating",
+        }),
+      );
+    }
+  }
+
+  private updateImage() {
+    this.generating = false;
+    this.updateGenerating();
+
+    this.remove(".backupImage");
+    for (let index = 0; index < (this.alternativeUrls || []).length; index++) {
+      const backupImageUrl = (this.alternativeUrls || [])[index];
       this.add(
         new Image({
           x: 0,
@@ -90,18 +161,25 @@ export class VvImage extends Box {
           rotation: -4 * (index + 1),
           origin: "center",
           opacity: 0.2,
-          name: "backupImage",
+          className: "backupImage",
         }),
       );
     }
 
-    const activeUrl = this.urls?.[0];
+    if (this.url) {
+      if (this.placeholderNode) {
+        this.remove(this.placeholderNode);
+      }
 
-    if (activeUrl) {
-      this.activeImg = new Image({
+      if (this.imgNode) {
+        this.imgNode.destroy();
+        this.remove(this.imgNode);
+      }
+
+      this.imgNode = new Image({
         x: 0,
         y: 0,
-        url: activeUrl,
+        url: this.url,
         editable: false,
         dimskip: true,
         cornerRadius: 8,
@@ -109,22 +187,36 @@ export class VvImage extends Box {
         origin: "center",
       });
 
-      this.add(this.activeImg);
+      this.add(this.imgNode);
 
-      this.activeImg.on(ImageEvent.LOADED, (e) => {
+      this.imgNode.on(ImageEvent.LOADED, (e) => {
         const { width, height } = this.calculateImageSize(
           e.image.width,
           e.image.height,
         );
 
-        this.activeImg!.width = this.width = width;
-        this.activeImg!.height = this.height = height;
+        this.imgNode!.width = this.width = width;
+        this.imgNode!.height = this.height = height;
 
-        this.find((i) => (i.name === "backupImage" ? 1 : 0)).forEach((i) => {
+        this.find(".backupImage").forEach((i) => {
           i.width = width;
           i.height = height;
         });
+
+        // 根据工具栏尺寸
+        vvGlobal.updateToolPosition();
       });
+    } else {
+      this.placeholderNode = Image.one({
+        editable: false,
+        width: this.width! / 3,
+        height: this.height! / 3,
+        x: this.width! / 2,
+        y: this.height! / 2,
+        around: "center",
+        url: placeholderImg,
+      });
+      this.add(this.placeholderNode);
     }
   }
 }

@@ -1,15 +1,11 @@
 import "@leafer-in/animate";
+import "@leafer-in/bright";
 import "@leafer-in/scroller";
 import "@leafer-in/state";
-import "@leafer-in/bright";
-import { App, Platform, Debug } from "leafer-editor";
-import { v4 } from "uuid";
+import { App, Debug, Platform } from "leafer-editor";
 import { useEffect, useRef } from "react";
 import { Control } from "./component/control/inex";
 import { vvGlobal } from "./mobx/vv-global";
-import { testText } from "./test-data";
-import { VvImage } from "./ui/vv-image";
-import { VvText } from "./ui/vv-text";
 // 允许跨域图片渲染，但不支持导出画板内容（浏览器的限制）。
 // @ts-ignore
 Platform.image.crossOrigin = null;
@@ -17,40 +13,6 @@ Platform.image.crossOrigin = null;
 
 export default function VvApp() {
   const app = useRef<App>(undefined);
-
-  const add = () => {
-    if (!app.current) return;
-
-    const _app = app.current;
-
-    _app.lockLayout();
-    const vvImage = VvImage.one(
-      {
-        id: v4(),
-        editable: true,
-        urls: [
-          "https://files.tapnow.top/api/conversation/storage/uploads/d0fce519-9c82-4d4b-9c8d-6e384b2fe0f0",
-        ],
-      },
-      0,
-      0,
-    );
-    _app.tree.add(vvImage);
-
-    const vvText = VvText.one(
-      {
-        id: v4(),
-        editable: true,
-        text: testText,
-      },
-      500,
-      500,
-    );
-    _app.tree.add(vvText);
-
-    _app.unlockLayout();
-    console.log("add finish");
-  };
 
   useEffect(() => {
     // 挂载到正确的容器
@@ -85,8 +47,6 @@ export default function VvApp() {
     vvGlobal.setApp(_app);
 
     app.current = _app;
-
-    add();
 
     return () => {
       _app.destroy();

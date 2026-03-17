@@ -6,6 +6,7 @@ import {
   dataType,
   IBoxData,
   IBoxInputData,
+  PropertyEvent,
   registerUI,
   surfaceType,
   Text,
@@ -39,7 +40,6 @@ export class VvText extends Box {
   declare public preNodes: string[];
 
   private textNode: Text | undefined = undefined;
-  private scrollBoxNode: Box | undefined = undefined;
 
   constructor(input: IVvTextInputData) {
     super(input);
@@ -49,9 +49,10 @@ export class VvText extends Box {
     };
 
     this.textBox = true;
-    this.overflow = "hide";
     this.width = 640;
     this.height = 640;
+    this.overflow = "y-scroll";
+    this.scrollConfig = { theme: "dark" };
     this.cornerRadius = 8;
     this.fill = "rgba(35, 36, 41, 1)";
     this.stroke = "rgba(255, 255, 255, 0.4)";
@@ -61,11 +62,6 @@ export class VvText extends Box {
     this.childlessJSON = true;
     this.loadText();
     this.on([BoundsEvent.RESIZE], (e) => {
-      if (this.scrollBoxNode) {
-        this.scrollBoxNode.width = e.width;
-        this.scrollBoxNode.height = e.height;
-      }
-
       if (this.textNode) {
         this.textNode.width = e.width;
         this.textNode.height = e.height;
@@ -81,21 +77,23 @@ export class VvText extends Box {
         padding: 8,
         fontSize: 14,
         placeholder: "请输入",
-      });
-
-      this.scrollBoxNode = new Box({
-        width: 640,
         height: 640,
-        textBox: true,
-        overflow: "y-scroll",
-        scrollConfig: {
-          strokeWidth: 0,
-          stopDefault: true,
-        },
+        width: 640,
+        autoHeight: true,
       });
 
-      this.scrollBoxNode.add(this.textNode);
-      this.add(this.scrollBoxNode);
+      this.add(this.textNode);
+
+      this.textNode.on(PropertyEvent.CHANGE, (e) => {
+        if (e.attrName === "text") {
+          this.text = e.newValue;
+        }
+      });
     }
+  }
+
+  override destroy(): void {
+    this.textNode?.off(PropertyEvent.CHANGE);
+    super.destroy();
   }
 }

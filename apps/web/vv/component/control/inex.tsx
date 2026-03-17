@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 import { IconSearch, IconTemplateStroked } from "@douyinfe/semi-icons";
 import { AIChatInput, Avatar, Card, Dropdown, Space } from "@douyinfe/semi-ui";
 import { Connector } from "leafer-connector";
-import { EditorEvent, EditorMoveEvent } from "leafer-editor";
+import { EditorEvent, EditorMoveEvent, EditorScaleEvent } from "leafer-editor";
 import {
   IUI,
   KeyEvent,
@@ -20,53 +20,14 @@ import { VvImage } from "../../ui/vv-image";
 import { VvText } from "../../ui/vv-text";
 import { SizeBox } from "../size";
 
-// 定义选中数据接口
-interface SelectData {
-  visible: boolean;
-  x?: number;
-  y?: number;
-}
-
 const modelOptions = [
   { value: "GPT-5", label: "GPT-5" },
   { value: "GPT-4o", label: "GPT-4o" },
   { value: "Claude 3.5 Sonnet", label: "Claude 3.5 Sonnet" },
+  { value: "nano-banana-pro", label: "Nano Banana Pro" },
 ];
 
 export const Control = observer(() => {
-  const [selectData, setSelectData] = useState<SelectData>();
-
-  // 计算并更新位置（节流版本）
-  const updatePosition = () => {
-    if (vvGlobal.connector) return;
-
-    if (!vvGlobal.activeNode) {
-      setSelectData({ visible: false });
-      vvGlobal.linkBtnLeft?.set({ visible: false });
-      vvGlobal.linkBtnRight?.set({ visible: false });
-    } else {
-      (vvGlobal.activeNode as any)?.__updateWorldMatrix?.();
-      const bounds = vvGlobal.activeNode.worldRenderBounds;
-      setSelectData({
-        visible: true,
-        x: bounds.x + bounds.width / 2,
-        y: bounds.y + bounds.height,
-      });
-
-      vvGlobal.linkBtnLeft?.set({
-        x: -18,
-        y: bounds.height / 2,
-        visible: true,
-      });
-
-      vvGlobal.linkBtnRight?.set({
-        x: bounds.width + 18,
-        y: bounds.height / 2,
-        visible: true,
-      });
-    }
-  };
-
   const updateDrawingConnector = (e: PointerEvent) => {
     const _app = vvGlobal.app;
     if (
@@ -209,23 +170,25 @@ export const Control = observer(() => {
 
     // 监听画布移动/缩放
     _app.tree.on([MoveEvent.MOVE, ZoomEvent.ZOOM], (e) => {
-      updatePosition();
+      vvGlobal.updateToolPosition();
       updateDrawingConnector(e);
     });
 
     // 监听画布上的元素移动
-    _app.editor.on([EditorMoveEvent.MOVE], updatePosition);
+    _app.editor.on([EditorMoveEvent.MOVE, EditorScaleEvent.SCALE], () => {
+      vvGlobal.updateToolPosition();
+    });
 
     // 监听选中变化
     _app.editor.on(EditorEvent.SELECT, (e) => {
-      if (e.value?.worldRenderBounds) {
+      if (e.value?.worldBoxBounds) {
         vvGlobal.setActiveNode(e.value);
-      } else if (e.value?.length === 1 && e.value[0]?.worldRenderBounds) {
+      } else if (e.value?.length === 1 && e.value[0]?.worldBoxBounds) {
         vvGlobal.setActiveNode(e.value[0]);
       } else {
         vvGlobal.setActiveNode(undefined);
       }
-      updatePosition(); // 选中后立即更新位置
+      vvGlobal.updateToolPosition(); // 选中后立即更新位置
       lightConnector(); // 更新连线
     });
 
@@ -249,10 +212,13 @@ export const Control = observer(() => {
 
     // 连接性-弹起事件
     _app.on(PointerEvent.UP, (e: PointerEvent) => {
-      const isRight = e.buttons === 2;
       if (!_app || !e.throughPath) return;
 
-      if (vvGlobal.connector && !isRight) {
+      const isClickRight = e.buttons === 2;
+      const isClickEmpty = e.throughPath.list.every((i) => i.tag === "App");
+
+      if (vvGlobal.connector?.mode === "draw" && !isClickRight) {
+        // 连接到其他元素上
         const linkableNode = e.throughPath.list.find((i) =>
           ["VvText", "VvImage"].includes(i.tag),
         );
@@ -268,35 +234,36 @@ export const Control = observer(() => {
           updateConnector();
           _app.editor.select(linkableNode as UI);
         } else {
-          if (vvGlobal.connector.mode === "add") {
-            // 已经是Add模式，又点了一下就是取消
-            vvGlobal.unsetConnector();
-          } else {
-            const point = e.getPagePoint();
-            vvGlobal.setConnectorAddMode(point, e);
-          }
+          // 空白处，进入ADD模式，弹出添加菜单
+          const point = e.getPagePoint();
+          vvGlobal.setConnectorAddMode(point, e);
         }
 
         vvGlobal.linkHover?.set({ visible: false });
 
+        // 绘制完毕后重新显示工具栏
         if (vvGlobal.activeNode) {
           vvGlobal.linkBtnLeft?.set({ visible: true });
           vvGlobal.linkBtnRight?.set({ visible: true });
-          setSelectData({ visible: true });
-          updatePosition();
+          vvGlobal.updateToolPosition();
         }
+        return;
+      }
 
+      // 已经是Add模式，又左键点了一下空白地方就是取消
+      if (vvGlobal.connector?.mode === "add" && !isClickRight) {
+        vvGlobal.unsetConnector();
         return;
       }
 
       // 空白处右键，可新建节点
-      if (isRight && e.throughPath.list.every((i) => i.tag === "App")) {
+      if (isClickRight && isClickEmpty) {
         const point = e.getPagePoint();
         vvGlobal.setConnectorAddMode(point, e);
       }
     });
 
-    // 聚焦
+    // 按空格聚焦元素，pageUP pageDown 切换上下游
     _app.on(KeyEvent.DOWN, (e) => {
       if (e.key === " " && vvGlobal.activeNode) {
         _app.zoom(vvGlobal.activeNode, {
@@ -304,7 +271,7 @@ export const Control = observer(() => {
           transition: {
             event: {
               completed: () => {
-                updatePosition();
+                vvGlobal.updateToolPosition();
               },
             },
           },
@@ -325,7 +292,7 @@ export const Control = observer(() => {
             transition: {
               event: {
                 completed: () => {
-                  updatePosition();
+                  vvGlobal.updateToolPosition();
                 },
               },
             },
@@ -344,7 +311,7 @@ export const Control = observer(() => {
             transition: {
               event: {
                 completed: () => {
-                  updatePosition();
+                  vvGlobal.updateToolPosition();
                 },
               },
             },
@@ -366,39 +333,62 @@ export const Control = observer(() => {
     };
   }, [vvGlobal.app]);
 
-  const renderLeftMenu = useCallback(
-    () => (
+  const renderConfigureArea = useCallback(() => {
+    if (!vvGlobal.activeNode) return null;
+    return (
       <>
         <AIChatInput.Configure.Select
+          key={`model_${vvGlobal.activeNode?.id}`}
           optionList={modelOptions}
           field="model"
-          initValue="GPT-4o"
+          initValue={(vvGlobal.activeNode as VvImage)?.aiProps?.model}
         />
-        <SizeBox />
+        {vvGlobal.activeNode?.tag === "VvImage" ? (
+          <SizeBox
+            key={`imgProps_${vvGlobal.activeNode?.id}`}
+            field="imgProps"
+            initValue={(vvGlobal.activeNode as VvImage)?.aiProps?.imgProps}
+          />
+        ) : null}
       </>
-    ),
-    [],
-  );
+    );
+  }, [vvGlobal.activeNode]);
 
   const renderTopSlot = useCallback(
     () => (
       <>
         <Space wrap style={{ marginBottom: 12 }}>
-          <Avatar shape="square" size="default">
-            角色三视图
-          </Avatar>
-          <Avatar
-            shape="square"
-            src={
-              "https://files.tapnow.top/api/conversation/storage/uploads/d0fce519-9c82-4d4b-9c8d-6e384b2fe0f0"
+          {(vvGlobal.activeNode as any)?.preNodes?.map((preNodeId: string) => {
+            const preNode = vvGlobal.app?.findOne((i) =>
+              i.id === preNodeId ? 1 : 0,
+            );
+
+            if (preNode?.tag === "VvImage") {
+              return (
+                <Avatar
+                  shape="square"
+                  src={(preNode as VvImage).url}
+                  imgAttr={{ style: { objectFit: "cover" } }}
+                  size="default"
+                  key={preNode?.id}
+                />
+              );
             }
-            imgAttr={{ style: { objectFit: "cover" } }}
-            size="default"
-          ></Avatar>
+
+            if (preNode?.tag === "VvText") {
+              return (
+                <Avatar shape="square" size="default" key={preNode?.id}>
+                  {(preNode as VvText).text.slice(0, 6)}
+                </Avatar>
+              );
+            }
+
+            return null;
+          })}
         </Space>
       </>
     ),
-    [],
+    [vvGlobal.activeNode],
   );
 
   const startConnector = (
@@ -408,7 +398,7 @@ export const Control = observer(() => {
     if (!vvGlobal.app || !vvGlobal.activeNode || vvGlobal.connector) return;
 
     (vvGlobal.activeNode as any)?.__updateWorldMatrix?.();
-    setSelectData({ visible: false });
+    vvGlobal.hideAiChatPosition();
 
     const fromPoint = {
       x:
@@ -437,44 +427,85 @@ export const Control = observer(() => {
     vvGlobal.maskLayer?.add(connector);
     vvGlobal.linkBtnLeft?.set({ visible: false });
     vvGlobal.linkBtnRight?.set({ visible: false });
-    setSelectData({ visible: false });
+    vvGlobal.hideAiChatPosition();
     vvGlobal.setConnector(connector, vvGlobal.activeNode, fromPoint);
   };
 
   return (
     <>
-      <div
-        style={{
-          zIndex: 1,
-          position: "absolute",
-          transform: `translate(calc(${!selectData?.visible ? -99999 : (selectData?.x ?? -99999)}px - 50%), ${!selectData?.visible ? -99999 : (selectData?.y ?? -99999) + 18}px)`,
-        }}
-        onKeyDown={(e) => {
-          // 阻止冒泡
-          e.stopPropagation();
-        }}
-      >
-        <AIChatInput
-          placeholder="输入内容或者上传内容..."
-          style={{ backgroundColor: "var(--semi-color-bg-1)", width: 700 }}
-          renderConfigureArea={renderLeftMenu}
-          renderTopSlot={renderTopSlot}
-          showUploadButton={false}
-          skillHotKey="/"
-          skills={[
-            {
-              icon: <IconTemplateStroked />,
-              value: "writing",
-              label: "多机位九宫格",
-            },
-            {
-              icon: <IconSearch />,
-              value: "AI 编程",
-              label: "AI coding",
-            },
-          ]}
-        />
-      </div>
+      {vvGlobal?.activeNode ? (
+        <div
+          style={{
+            zIndex: 1,
+            position: "absolute",
+            transform: `translate(calc(${!vvGlobal.aiChatBoxPosition?.visible ? -99999 : (vvGlobal.aiChatBoxPosition?.x ?? -99999)}px - 50%), ${!vvGlobal.aiChatBoxPosition?.visible ? -99999 : (vvGlobal.aiChatBoxPosition?.y ?? -99999) + 18}px)`,
+          }}
+          onKeyDown={(e) => {
+            // 阻止冒泡
+            e.stopPropagation();
+          }}
+        >
+          <AIChatInput
+            key={`ai-chat-input-${vvGlobal.activeNode.id}-${vvGlobal.rid}`}
+            placeholder="输入内容..."
+            style={{ backgroundColor: "var(--semi-color-bg-1)", width: 700 }}
+            defaultContent={(vvGlobal?.activeNode as any)?.aiProps?.content}
+            onContentChange={(e) => {
+              (vvGlobal.activeNode as any).set({
+                aiProps: {
+                  ...((vvGlobal.activeNode as any)?.aiProps || {}),
+                  content: e?.[0]?.text,
+                },
+              });
+            }}
+            renderConfigureArea={renderConfigureArea}
+            onConfigureChange={(e) => {
+              (vvGlobal.activeNode as any).set({
+                aiProps: {
+                  ...((vvGlobal.activeNode as any)?.aiProps || {}),
+                  imgProps: e.imgProps,
+                  model: e.model,
+                },
+              });
+            }}
+            renderTopSlot={renderTopSlot}
+            showUploadButton={false}
+            skillHotKey="/"
+            generating={(vvGlobal.activeNode as any)?.generating}
+            onMessageSend={(e) => {
+              (vvGlobal.activeNode as any).set({
+                generating: true,
+                aiProps: {
+                  imgProps: e.setup?.imgProps,
+                  model: e.setup?.model,
+                  content: e.inputContents?.[0]?.text,
+                },
+              });
+              vvGlobal.rerender();
+              setTimeout(() => {
+                (vvGlobal.activeNode as any).set({
+                  url: "https://files.tapnow.top/api/conversation/storage/uploads/2185be2c-4570-40d3-96c1-c45e2b1aa60f?variant_name=small",
+                  alternativeUrls: [
+                    "https://files.tapnow.top/api/conversation/storage/uploads/2185be2c-4570-40d3-96c1-c45e2b1aa60f?variant_name=small",
+                  ],
+                });
+              }, 3000);
+            }}
+            skills={[
+              {
+                icon: <IconTemplateStroked />,
+                value: "writing",
+                label: "多机位九宫格",
+              },
+              {
+                icon: <IconSearch />,
+                value: "AI 编程",
+                label: "AI coding",
+              },
+            ]}
+          />
+        </div>
+      ) : null}
       <div
         style={{
           zIndex: 1,
@@ -499,9 +530,7 @@ export const Control = observer(() => {
                   {
                     id: v4(),
                     editable: true,
-                    urls: [
-                      "https://files.tapnow.top/api/conversation/storage/uploads/d0fce519-9c82-4d4b-9c8d-6e384b2fe0f0",
-                    ],
+                    urls: [],
                     preNodes: vvGlobal.connector?.fromNode
                       ? [vvGlobal.connector.fromNode.id]
                       : [],
@@ -522,8 +551,9 @@ export const Control = observer(() => {
                 _app.editor.select(vvImage);
               }}
             >
-              图片
+              上传图片
             </Dropdown.Item>
+
             <Dropdown.Item
               onClick={() => {
                 const _app = vvGlobal.app;
@@ -556,7 +586,42 @@ export const Control = observer(() => {
                 _app.editor.select(vvText);
               }}
             >
-              文本
+              文本生成
+            </Dropdown.Item>
+
+            <Dropdown.Item
+              onClick={() => {
+                const _app = vvGlobal.app;
+                if (!_app || !vvGlobal.connector?.addAt) return;
+
+                _app.lockLayout();
+
+                const vvImage = VvImage.one(
+                  {
+                    id: v4(),
+                    editable: true,
+                    urls: [],
+                    preNodes: vvGlobal.connector?.fromNode
+                      ? [vvGlobal.connector.fromNode.id]
+                      : [],
+                    around: "center",
+                  },
+                  vvGlobal.connector.addAt.x,
+                  vvGlobal.connector.addAt.y,
+                );
+
+                const transform = { ...vvImage.localTransform };
+                vvImage.around = "top-left";
+                vvImage.setTransform(transform);
+
+                _app.tree.add(vvImage);
+                _app.unlockLayout();
+                vvGlobal.unsetConnector();
+                updateConnector();
+                _app.editor.select(vvImage);
+              }}
+            >
+              图片生成
             </Dropdown.Item>
           </Dropdown.Menu>
         </Card>
