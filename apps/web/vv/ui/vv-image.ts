@@ -1,20 +1,15 @@
 import {
   boundsType,
-  Box,
-  BoxData,
   dataProcessor,
   dataType,
-  IBoxData,
-  IBoxInputData,
   Image,
   ImageEvent,
   PropertyEvent,
-  Rect,
   registerUI,
-  Text,
 } from "leafer-ui";
-import { vvGlobal } from "../mobx/vv-global";
 import placeholderImg from "../asset/temp-image.svg";
+import { vvGlobal } from "../mobx/vv-global";
+import { IVvBaseData, IVvBaseInputData, VvBase, VvBaseData } from "./vv-base";
 
 interface AiProps {
   imgProps?: {
@@ -25,26 +20,25 @@ interface AiProps {
   model?: string; // 模型
   provider?: string; //模型提供商
 }
-interface IVvImageInputData extends IBoxInputData {
+
+interface IVvImageInputData extends IVvBaseInputData {
   url?: string;
   alternativeUrls?: string[];
   preNodes?: string[];
   aiProps?: AiProps;
-  generating?: boolean;
 }
 
-interface IVvImageData extends IBoxData {
+interface IVvImageData extends IVvBaseData {
   url?: string;
   alternativeUrls?: string[];
   preNodes?: string[];
   aiProps?: AiProps;
-  generating?: boolean;
 }
 
-class VvImageData extends BoxData implements IVvImageData {}
+class VvImageData extends VvBaseData implements IVvImageData {}
 
 @registerUI()
-export class VvImage extends Box {
+export class VvImage extends VvBase {
   public override get __tag() {
     return "VvImage";
   }
@@ -79,19 +73,8 @@ export class VvImage extends Box {
 
   constructor(input: IVvImageInputData) {
     super(input);
-    this.editConfig = {
-      ...this.editConfig,
-    };
-
     this.width = 640;
     this.height = 640;
-    this.hitBox = true;
-    this.cornerRadius = 8;
-    this.stroke = "rgba(255, 255, 255, 0.4)";
-    this.strokeWidth = 2;
-    this.strokeAlign = "outside";
-    this.strokeScaleFixed = "zoom-in";
-    this.childlessJSON = true;
     this.updateImage();
 
     this.on(PropertyEvent.CHANGE, (e) => {
@@ -100,7 +83,7 @@ export class VvImage extends Box {
       }
 
       if (e.attrName === "generating") {
-        this.updateGenerating();
+        this.renderGenerating();
       }
     });
   }
@@ -121,31 +104,9 @@ export class VvImage extends Box {
     };
   }
 
-  private updateGenerating() {
-    this.remove(".generating");
-
-    if (this.generating) {
-      this.add(
-        Rect.one({
-          x: 0,
-          y: 0,
-          width: this.width,
-          height: this.height,
-          fill: "rgba(255, 255, 255, 0.1)",
-          animation: {
-            style: { fill: "rgba(255, 255, 255, 0.6)" },
-            duration: 1,
-            swing: true, // 摇摆循环播放
-          },
-          className: "generating",
-        }),
-      );
-    }
-  }
-
   private updateImage() {
     this.generating = false;
-    this.updateGenerating();
+    this.renderGenerating();
 
     this.remove(".backupImage");
     for (let index = 0; index < (this.alternativeUrls || []).length; index++) {
@@ -204,7 +165,9 @@ export class VvImage extends Box {
         });
 
         // 根据工具栏尺寸
-        vvGlobal.updateToolPosition();
+        this.nextRender(() => {
+          vvGlobal.updateToolPosition();
+        });
       });
     } else {
       this.placeholderNode = Image.one({
@@ -218,5 +181,28 @@ export class VvImage extends Box {
       });
       this.add(this.placeholderNode);
     }
+  }
+
+  public generateImage(aiProps: AiProps) {
+    this.set({
+      aiProps,
+      generating: true,
+    });
+
+    setTimeout(() => {
+      // 模拟AI生成结束
+      this.set({
+        generating: false,
+        url: "https://files.tapnow.top/api/conversation/storage/uploads/2185be2c-4570-40d3-96c1-c45e2b1aa60f?variant_name=small",
+        alternativeUrls: [
+          "https://files.tapnow.top/api/conversation/storage/uploads/2185be2c-4570-40d3-96c1-c45e2b1aa60f?variant_name=small",
+        ],
+      });
+    }, 3000);
+  }
+
+  override destroy(): void {
+    this.off([PropertyEvent.CHANGE]);
+    this.destroy();
   }
 }
